@@ -29,6 +29,29 @@ function showStep2() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// 商品写真をリセット
+function resetProductUpload() {
+  if (confirm('アップロードした写真と商品情報を削除してやり直しますか？')) {
+    // データをクリア
+    productData.images = [];
+    productData.info = null;
+
+    // プレビューと商品情報を非表示
+    document.getElementById('product-preview').classList.add('hidden');
+    document.getElementById('product-info').classList.add('hidden');
+
+    // プレビュー画像をクリア
+    document.getElementById('preview-images').innerHTML = '';
+    document.getElementById('product-details').innerHTML = '';
+
+    // ファイル入力をリセット
+    document.getElementById('product-upload').value = '';
+
+    // アップロードエリアにスクロール
+    document.getElementById('product-upload-area').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
 // STEP 0: 商品写真アップロード
 const productUploadArea = document.getElementById('product-upload-area');
 const productUpload = document.getElementById('product-upload');
