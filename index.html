@@ -27,12 +27,12 @@
           <div class="flow-diagram">
             <div class="flow-step">
               <div class="flow-number">0</div>
-              <p>サボに商品情報を登録</p>
+              <p>Amazon公式AIで自動入力</p>
             </div>
             <div class="flow-arrow">→</div>
             <div class="flow-step">
               <div class="flow-number">1</div>
-              <p>Amazon公式AIで自動入力</p>
+              <p>サボに商品情報を登録</p>
             </div>
             <div class="flow-arrow">→</div>
             <div class="flow-step">
@@ -43,23 +43,46 @@
 
           <div class="note-box">
             <strong>💡 重要：</strong><br>
-            最初にサボに商品情報を登録することで、後でわからない項目を質問したときに、<br>
-            サボがあなたの商品に合った回答を提供できます。
+            まずAmazonで商品登録を始めて、わからないところが出てきたらサボに商品情報を登録して質問してください。<br>
+            サボがあなたの商品に合った回答を提供します。
           </div>
         </div>
       </section>
 
-      <!-- STEP 0: 商品情報登録 -->
+      <!-- STEP 0: Amazon公式AI機能 -->
       <section id="step0" class="step-section">
         <div class="step-header">
           <span class="step-number">STEP 0</span>
+          <h2>Amazon公式AI機能で自動入力</h2>
+        </div>
+
+        <div class="guide-content">
+          <p class="guide-text" style="text-align: center; font-size: 18px; margin: 40px 0;">
+            セラーセントラルで<strong>「商品登録」→ 空白のフォーム → 出品情報の作成の「今すぐお試しください」</strong>を選んで、<br>
+            商品写真をアップロードしてAIに自動入力させてください。
+          </p>
+
+          <div class="note-box" style="margin: 40px 0;">
+            <strong>💡 ポイント：</strong><br>
+            商品パッケージの写真（全体、JANコード、仕様など）を撮影してアップロードしてください。<br>
+            Amazon公式AIが自動的に多くの項目を埋めてくれます。
+          </div>
+
+          <button class="next-btn" onclick="showStep1()">次へ：サボに商品情報を登録 →</button>
+        </div>
+      </section>
+
+      <!-- STEP 1: 商品情報登録 -->
+      <section id="step1" class="step-section hidden">
+        <div class="step-header">
+          <span class="step-number">STEP 1</span>
           <h2>サボに商品情報を登録</h2>
         </div>
 
         <div class="guide-content">
           <p class="guide-text">
-            まず最初に、サボに商品の情報を教えてください。<br>
-            商品パッケージの写真をアップロードすることで、サボが商品情報を記憶します。
+            Amazonで埋まらなかった項目がありますか？<br>
+            サボに商品の情報を教えてください。商品パッケージの写真をアップロードすることで、サボが商品情報を記憶します。
           </p>
 
           <h3>📸 推奨：以下の写真を撮影してアップロード</h3>
@@ -119,29 +142,6 @@
             <div id="product-details" class="product-details"></div>
           </div>
 
-          <button class="next-btn" onclick="showStep1()">次へ：Amazon公式AI機能を使う →</button>
-        </div>
-      </section>
-
-      <!-- STEP 1: Amazon公式AI機能 -->
-      <section id="step1" class="step-section hidden">
-        <div class="step-header">
-          <span class="step-number">STEP 1</span>
-          <h2>Amazon公式AI機能で自動入力</h2>
-        </div>
-
-        <div class="guide-content">
-          <p class="guide-text" style="text-align: center; font-size: 18px; margin: 40px 0;">
-            セラーセントラルで<strong>「商品登録」→ 空白のフォーム → 出品情報の作成の「今すぐお試しください」</strong>を選んで、<br>
-            商品写真をアップロードしてAIに自動入力させてください。
-          </p>
-
-          <div class="note-box" style="margin: 40px 0;">
-            <strong>💡 ポイント：</strong><br>
-            STEP 0でアップロードした商品写真と同じものをセラーセントラルにもアップロードしてください。<br>
-            Amazon公式AIが自動的に多くの項目を埋めてくれます。
-          </div>
-
           <button class="next-btn" onclick="showStep2()">次へ：わからないところをサボに質問 →</button>
           <button class="back-btn" onclick="showStep0()">← 戻る</button>
         </div>
@@ -158,7 +158,7 @@
           <p class="guide-text">
             Amazon AIでも埋まらなかった項目や、入力方法がわからない項目はありませんか？<br>
             <strong>その部分のスクリーンショットをアップロードしてください。</strong><br>
-            サボが、STEP 0で登録した商品情報をもとに、何を入力すればよいかアドバイスします。
+            サボが、STEP 1で登録した商品情報をもとに、何を入力すればよいかアドバイスします。
           </p>
 
           <div class="screenshot-helper">
