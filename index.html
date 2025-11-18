@@ -20,46 +20,122 @@
         <div class="intro-content">
           <p>
             <strong>サボは、Amazonセラーセントラルでカタログを作成する際に、<br>
-            埋まらなかった項目や分からない項目をサポートするツールです。</strong>
+            わからない項目を商品情報をもとにサポートするツールです。</strong>
           </p>
 
           <div class="flow-diagram">
             <div class="flow-step">
+              <div class="flow-number">0</div>
+              <p>サボに商品情報を登録</p>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
               <div class="flow-number">1</div>
-              <p>まずAmazon公式のAI機能を使う</p>
+              <p>Amazon公式AIで自動入力</p>
             </div>
             <div class="flow-arrow">→</div>
             <div class="flow-step">
               <div class="flow-number">2</div>
-              <p>埋まらなかった項目を確認</p>
-            </div>
-            <div class="flow-arrow">→</div>
-            <div class="flow-step">
-              <div class="flow-number">3</div>
-              <p>サボで補助・アドバイス</p>
+              <p>わからないところをサボに質問</p>
             </div>
           </div>
 
           <div class="note-box">
             <strong>💡 重要：</strong><br>
-            Amazon公式のAI機能が最も正確です。まずはそちらを使ってください。<br>
-            このツールは、それでも分からない部分を補助するためのものです。
+            最初にサボに商品情報を登録することで、後でわからない項目を質問したときに、<br>
+            サボがあなたの商品に合った回答を提供できます。
           </div>
         </div>
       </section>
 
-      <!-- STEP 0: Amazon公式AI機能の使い方 -->
-      <section class="step-section">
+      <!-- STEP 0: 商品情報登録 -->
+      <section id="step0" class="step-section">
         <div class="step-header">
           <span class="step-number">STEP 0</span>
-          <h2>Amazon公式AI機能の使い方</h2>
+          <h2>サボに商品情報を登録</h2>
         </div>
 
         <div class="guide-content">
-          <h3>📸 どんな写真を撮るべきか？</h3>
           <p class="guide-text">
-            Amazon公式のAI機能は、<strong>最大3枚の商品写真</strong>から自動的に商品情報を入力してくれます。
+            まず最初に、サボに商品の情報を教えてください。<br>
+            商品パッケージの写真をアップロードすることで、サボが商品情報を記憶します。
           </p>
+
+          <h3>📸 推奨：以下の写真を撮影してアップロード</h3>
+
+          <div class="photo-tips">
+            <div class="tip-card">
+              <div class="tip-icon">📦</div>
+              <h4>1. パッケージ全体</h4>
+              <ul>
+                <li>商品名が読める</li>
+                <li>ブランド名が見える</li>
+                <li>パッケージ全体が写っている</li>
+                <li>明るく、ピントが合っている</li>
+              </ul>
+            </div>
+
+            <div class="tip-card">
+              <div class="tip-icon">🔢</div>
+              <h4>2. JANコード・バーコード</h4>
+              <ul>
+                <li>バーコードがはっきり写っている</li>
+                <li>数字が読める（13桁または8桁）</li>
+                <li>ぼやけていない</li>
+              </ul>
+            </div>
+
+            <div class="tip-card">
+              <div class="tip-icon">📝</div>
+              <h4>3. 商品の仕様・説明</h4>
+              <ul>
+                <li>商品の仕様が書かれている面</li>
+                <li>型番・メーカー名</li>
+                <li>容量・サイズ・重量など</li>
+                <li>特徴やセールスポイント</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="upload-area-product" id="product-upload-area">
+            <div class="upload-content">
+              <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+              </svg>
+              <p><strong>商品写真をアップロード</strong></p>
+              <p class="small">クリックまたはドラッグ&ドロップ（複数枚OK）</p>
+            </div>
+            <input type="file" id="product-upload" accept="image/*" multiple hidden>
+          </div>
+
+          <div id="product-preview" class="product-preview hidden">
+            <h4>📷 アップロードされた写真</h4>
+            <div id="preview-images" class="preview-images"></div>
+          </div>
+
+          <div id="product-info" class="product-info hidden">
+            <h4 style="color: #667eea; margin-bottom: 16px;">✅ 商品情報を記憶しました</h4>
+            <div id="product-details" class="product-details"></div>
+          </div>
+
+          <button class="next-btn" onclick="showStep1()">次へ：Amazon公式AI機能を使う →</button>
+        </div>
+      </section>
+
+      <!-- STEP 1: Amazon公式AI機能 -->
+      <section id="step1" class="step-section hidden">
+        <div class="step-header">
+          <span class="step-number">STEP 1</span>
+          <h2>Amazon公式AI機能で自動入力</h2>
+        </div>
+
+        <div class="guide-content">
+          <p class="guide-text">
+            Amazonセラーセントラルには、商品写真から自動的に商品情報を入力してくれるAI機能があります。<br>
+            まずはこの機能を使って、できるだけ多くの項目を自動入力しましょう。
+          </p>
+
+          <h3>📸 撮影のポイント（STEP 0と同じ要領で）</h3>
 
           <div class="photo-tips">
             <div class="tip-card">
@@ -74,13 +150,12 @@
             </div>
 
             <div class="tip-card">
-              <div class="tip-icon">📊</div>
-              <h4>2枚目：JANコード（バーコード）</h4>
+              <div class="tip-icon">🔢</div>
+              <h4>2枚目：JANコード・バーコード</h4>
               <ul>
-                <li>バーコードが鮮明に読める</li>
-                <li>数字がはっきり見える</li>
-                <li>光の反射がない</li>
-                <li>斜めではなく正面から</li>
+                <li>バーコードがはっきり写っている</li>
+                <li>数字が読める（13桁または8桁）</li>
+                <li>ぼやけていない</li>
               </ul>
             </div>
 
@@ -113,316 +188,61 @@
             AIが自動入力した内容は、<strong>必ず確認してください</strong>。<br>
             間違った情報が含まれている場合があります。
           </div>
-        </div>
 
-        <button class="next-btn" onclick="showStep1()">次へ：埋まらなかった項目を確認する →</button>
+          <button class="next-btn" onclick="showStep2()">次へ：わからないところをサボに質問 →</button>
+          <button class="back-btn" onclick="showStep0()">← 戻る</button>
+        </div>
       </section>
 
-      <!-- STEP 1: 埋まらなかった項目の確認 -->
-      <section class="step-section hidden" id="step1">
-        <div class="step-header">
-          <span class="step-number">STEP 1</span>
-          <h2>埋まらなかった項目を教えてください</h2>
-        </div>
-
-        <div class="checklist-content">
-          <p class="instruction-text">
-            Amazon公式AIで自動入力した後、<strong>埋まらなかった項目</strong>や<strong>分からない項目</strong>にチェックを入れてください。
-          </p>
-
-          <div class="tabs">
-            <button class="tab-btn active" data-tab="identification">商品の識別情報</button>
-            <button class="tab-btn" data-tab="description">説明</button>
-            <button class="tab-btn" data-tab="details">商品詳細</button>
-            <button class="tab-btn" data-tab="offer">出品情報</button>
-            <button class="tab-btn" data-tab="compliance">安全とコンプライアンス</button>
-          </div>
-
-          <!-- 商品の識別情報 -->
-          <div class="tab-content active" id="tab-identification">
-            <h3>商品の識別情報</h3>
-            <div class="checkbox-group">
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="product-name">
-                <span class="checkbox-label">
-                  <strong>商品名</strong>（必須）
-                  <span class="field-hint">商品の正式名称</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="product-type">
-                <span class="checkbox-label">
-                  <strong>商品タイプ</strong>（必須）
-                  <span class="field-hint">カテゴリの選択</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="brand">
-                <span class="checkbox-label">
-                  <strong>ブランド名</strong>（必須）
-                  <span class="field-hint">メーカー名・ブランド名</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="jan-code">
-                <span class="checkbox-label">
-                  <strong>外部製品ID（JANコード）</strong>
-                  <span class="field-hint">バーコードの数字</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="browse-node">
-                <span class="checkbox-label">
-                  <strong>推奨されるブラウズノード</strong>
-                  <span class="field-hint">詳細カテゴリの選択</span>
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <!-- 説明 -->
-          <div class="tab-content" id="tab-description">
-            <h3>説明</h3>
-            <div class="checkbox-group">
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="description">
-                <span class="checkbox-label">
-                  <strong>商品説明</strong>（必須）
-                  <span class="field-hint">詳細な商品説明文（最大500文字）</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="bullet-points">
-                <span class="checkbox-label">
-                  <strong>商品の仕様</strong>（箇条書き5つ）
-                  <span class="field-hint">商品の特徴を箇条書きで</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="images">
-                <span class="checkbox-label">
-                  <strong>商品画像</strong>（必須・複数枚）
-                  <span class="field-hint">メイン画像＋追加画像</span>
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <!-- 商品詳細 -->
-          <div class="tab-content" id="tab-details">
-            <h3>商品詳細（カテゴリによって異なります）</h3>
-            <div class="checkbox-group">
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="model-number">
-                <span class="checkbox-label">
-                  <strong>品番・型番</strong>
-                  <span class="field-hint">メーカーの型番</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="manufacturer">
-                <span class="checkbox-label">
-                  <strong>メーカー名</strong>
-                  <span class="field-hint">製造メーカー</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="color">
-                <span class="checkbox-label">
-                  <strong>色</strong>
-                  <span class="field-hint">商品の色</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="material">
-                <span class="checkbox-label">
-                  <strong>素材</strong>
-                  <span class="field-hint">複数選択可能</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="dimensions">
-                <span class="checkbox-label">
-                  <strong>商品の寸法</strong>
-                  <span class="field-hint">幅・奥行き・高さ（単位付き）</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="weight">
-                <span class="checkbox-label">
-                  <strong>商品の重量</strong>
-                  <span class="field-hint">重さ（単位付き）</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="capacity">
-                <span class="checkbox-label">
-                  <strong>容量</strong>
-                  <span class="field-hint">リットル、ミリリットルなど</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="wattage">
-                <span class="checkbox-label">
-                  <strong>電力消費・ワット数</strong>
-                  <span class="field-hint">ワット、キロワットなど</span>
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <!-- 出品情報 -->
-          <div class="tab-content" id="tab-offer">
-            <h3>出品情報</h3>
-            <div class="checkbox-group">
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="sku">
-                <span class="checkbox-label">
-                  <strong>SKU</strong>
-                  <span class="field-hint">在庫管理番号</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="price">
-                <span class="checkbox-label">
-                  <strong>在庫数</strong>（必須）
-                  <span class="field-hint">販売する数量</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="selling-price">
-                <span class="checkbox-label">
-                  <strong>商品の販売価格</strong>（必須）
-                  <span class="field-hint">販売価格（税込）</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="condition">
-                <span class="checkbox-label">
-                  <strong>商品の状態</strong>（必須）
-                  <span class="field-hint">新品・中古など</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="fulfillment">
-                <span class="checkbox-label">
-                  <strong>フルフィルメントチャネル</strong>（必須）
-                  <span class="field-hint">自己配送かFBAか</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="package-dimensions">
-                <span class="checkbox-label">
-                  <strong>パッケージ寸法</strong>
-                  <span class="field-hint">梱包後のサイズ</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="package-weight">
-                <span class="checkbox-label">
-                  <strong>商品パッケージ重量</strong>
-                  <span class="field-hint">梱包後の重さ</span>
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <!-- 安全とコンプライアンス -->
-          <div class="tab-content" id="tab-compliance">
-            <h3>安全とコンプライアンス</h3>
-            <div class="checkbox-group">
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="country-of-origin">
-                <span class="checkbox-label">
-                  <strong>原産国/地域</strong>（必須）
-                  <span class="field-hint">製造国</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="warranty">
-                <span class="checkbox-label">
-                  <strong>保証内容</strong>（必須）
-                  <span class="field-hint">メーカー保証の有無と期間</span>
-                </span>
-              </label>
-
-              <label class="checkbox-item">
-                <input type="checkbox" name="field" value="hazmat">
-                <span class="checkbox-label">
-                  <strong>危険物規制の種類</strong>
-                  <span class="field-hint">該当なし、GHS、保管など</span>
-                </span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <button class="next-btn" onclick="showStep2()">次へ：選択した項目のアドバイスを見る →</button>
-        <button class="back-btn" onclick="showStep0()">← STEP 0に戻る</button>
-      </section>
-
-      <!-- STEP 2: アドバイス表示 -->
-      <section class="step-section hidden" id="step2">
+      <!-- STEP 2: わからないところを質問 -->
+      <section id="step2" class="step-section hidden">
         <div class="step-header">
           <span class="step-number">STEP 2</span>
-          <h2>項目別のアドバイス</h2>
+          <h2>わからないところをサボに質問</h2>
         </div>
 
-        <div id="advice-container">
-          <!-- JavaScriptで動的に生成 -->
-        </div>
-
-        <div class="screenshot-helper">
-          <h3>💬 セラーセントラルのスクリーンショット解析</h3>
-          <p>
-            入力欄が分からない場合は、セラーセントラルの画面をスクリーンショットしてアップロードしてください。<br>
-            その画面に何を入力すべきか、具体的にアドバイスします。
+        <div class="guide-content">
+          <p class="guide-text">
+            Amazon AIでも埋まらなかった項目や、入力方法がわからない項目はありませんか？<br>
+            <strong>その部分のスクリーンショットをアップロードしてください。</strong><br>
+            サボが、STEP 0で登録した商品情報をもとに、何を入力すればよいかアドバイスします。
           </p>
 
-          <div class="upload-area" id="screenshot-upload-area">
-            <div class="upload-content">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                <polyline points="21 15 16 10 5 21"></polyline>
-              </svg>
-              <p>セラーセントラルのスクリーンショットをドロップ</p>
-              <p class="small">またはクリックして画像を選択</p>
+          <div class="screenshot-helper">
+            <h3>📸 わからない項目のスクリーンショットをアップロード</h3>
+            <p>
+              セラーセントラルで、入力方法がわからない項目や埋まらなかった項目のスクリーンショットを撮って、<br>
+              ここにアップロードしてください。サボが商品情報をもとに回答します。
+            </p>
+
+            <div class="upload-area" id="screenshot-upload-area">
+              <div class="upload-content">
+                <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                </svg>
+                <p><strong>スクリーンショットをアップロード</strong></p>
+                <p class="small">クリックまたはドラッグ&ドロップ</p>
+              </div>
+              <input type="file" id="screenshot-upload" accept="image/*" hidden>
             </div>
-            <input type="file" id="screenshot-upload" accept="image/*" hidden>
+
+            <div id="screenshot-advice" class="screenshot-advice hidden"></div>
           </div>
 
-          <div id="screenshot-advice" class="screenshot-advice hidden">
-            <!-- スクショ解析結果を表示 -->
+          <div class="note-box">
+            <strong>💡 ヒント：</strong><br>
+            スクリーンショットには、項目名や入力欄が明確に写っているものが最適です。<br>
+            複数の項目がわからない場合は、それぞれスクリーンショットを撮ってアップロードしてください。
           </div>
+
+          <button class="back-btn" onclick="showStep1()">← 戻る</button>
         </div>
-
-        <button class="back-btn" onclick="showStep1()">← STEP 1に戻る</button>
       </section>
+
     </main>
 
     <footer>
-      <p>練習用プロジェクト「サボ」- Amazonせどり初心者をサポート</p>
+      <p>&copy; 2024 サボ - Amazonせどりカタログ作成アシスタント</p>
     </footer>
   </div>
 
