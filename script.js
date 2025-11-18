@@ -78,93 +78,165 @@ async function handleProductUpload(files) {
   previewImages.innerHTML = '';
   productData.images = [];
 
+  const imageDataArray = [];
+
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     const reader = new FileReader();
 
-    reader.onload = (e) => {
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      img.style.width = '150px';
-      img.style.height = '150px';
-      img.style.objectFit = 'cover';
-      img.style.borderRadius = '8px';
-      img.style.border = '2px solid #e0e0e0';
-      img.style.marginRight = '12px';
-      img.style.marginBottom = '12px';
-      previewImages.appendChild(img);
+    await new Promise((resolve) => {
+      reader.onload = (e) => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.width = '150px';
+        img.style.height = '150px';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '8px';
+        img.style.border = '2px solid #e0e0e0';
+        img.style.marginRight = '12px';
+        img.style.marginBottom = '12px';
+        previewImages.appendChild(img);
 
-      productData.images.push(e.target.result);
-    };
-
-    reader.readAsDataURL(file);
+        productData.images.push(e.target.result);
+        imageDataArray.push(e.target.result);
+        resolve();
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
-  // AI解析のシミュレーション
+  // OCRで商品情報を読み取る
   productInfo.classList.remove('hidden');
-  productDetails.innerHTML = '<p style="text-align: center; color: #888;">解析中...</p>';
+  productDetails.innerHTML = `
+    <p style="text-align: center; color: #888;">
+      <span style="display: inline-block; width: 20px; height: 20px; border: 3px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span><br>
+      商品情報を読み取っています...
+    </p>
+    <style>
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  `;
 
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  try {
+    let allText = '';
 
-  // シミュレーション結果（実際はAI APIを使用）
-  const mockProductInfo = {
-    name: 'TOSHIBA 石窯オーブン ER-Y60',
-    brand: 'TOSHIBA',
-    janCode: '4904550912645',
-    model: 'ER-Y60',
-    color: 'グランホワイト',
-    capacity: '23L',
-    wattage: '1000W',
-    dimensions: '幅45.0cm × 奥行30.0cm × 高さ40.0cm',
-    weight: '12.5kg',
-    features: [
-      '角皿式スチーム機能搭載',
-      '石窯オーブン技術',
-      '1段式電子レンジ',
-      'コンパクトながら多機能'
-    ]
+    // 全ての画像からテキストを読み取る
+    for (let i = 0; i < imageDataArray.length; i++) {
+      const { data: { text } } = await Tesseract.recognize(
+        imageDataArray[i],
+        'jpn+eng',
+        {
+          logger: m => console.log(m)
+        }
+      );
+      allText += text + '\n';
+    }
+
+    console.log('商品情報OCR結果:', allText);
+
+    // テキストから商品情報を抽出
+    const extractedInfo = extractProductInfo(allText);
+    productData.info = extractedInfo;
+
+    // 商品情報を表示
+    productDetails.innerHTML = `
+      <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #e0e7ff;">
+        <div style="margin-bottom: 12px;">
+          <strong>商品名：</strong>${extractedInfo.name || '（読み取れませんでした）'}
+        </div>
+        ${extractedInfo.brand ? `<div style="margin-bottom: 12px;"><strong>ブランド：</strong>${extractedInfo.brand}</div>` : ''}
+        ${extractedInfo.janCode ? `<div style="margin-bottom: 12px;"><strong>JANコード：</strong>${extractedInfo.janCode}</div>` : ''}
+        ${extractedInfo.model ? `<div style="margin-bottom: 12px;"><strong>型番：</strong>${extractedInfo.model}</div>` : ''}
+        ${extractedInfo.weight ? `<div style="margin-bottom: 12px;"><strong>重量：</strong>${extractedInfo.weight}</div>` : ''}
+        ${extractedInfo.dimensions ? `<div style="margin-bottom: 12px;"><strong>寸法：</strong>${extractedInfo.dimensions}</div>` : ''}
+        ${extractedInfo.capacity ? `<div style="margin-bottom: 12px;"><strong>容量：</strong>${extractedInfo.capacity}</div>` : ''}
+        ${extractedInfo.wattage ? `<div style="margin-bottom: 12px;"><strong>消費電力：</strong>${extractedInfo.wattage}</div>` : ''}
+        ${extractedInfo.color ? `<div style="margin-bottom: 12px;"><strong>色：</strong>${extractedInfo.color}</div>` : ''}
+        ${extractedInfo.features && extractedInfo.features.length > 0 ? `
+          <div>
+            <strong>その他の情報：</strong>
+            <ul style="margin-left: 20px; margin-top: 8px;">
+              ${extractedInfo.features.map(f => `<li>${f}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
+      </div>
+      <div style="margin-top: 16px; padding: 16px; background: #fff8e1; border-radius: 8px; border-left: 3px solid #ffc107;">
+        <strong>💡 ヒント：</strong><br>
+        上記の情報が正しいか確認してください。情報が不足している場合は、より鮮明な写真を撮り直してアップロードしてください。
+      </div>
+    `;
+
+  } catch (error) {
+    console.error('商品情報読み取りエラー:', error);
+    productDetails.innerHTML = `
+      <div style="background: #fee; padding: 16px; border-radius: 8px; border-left: 3px solid #f44;">
+        <strong>⚠️ エラー：</strong><br>
+        商品情報の読み取りに失敗しました。もう一度試してください。
+      </div>
+    `;
+  }
+}
+
+// テキストから商品情報を抽出
+function extractProductInfo(text) {
+  const info = {
+    name: '',
+    brand: '',
+    janCode: '',
+    model: '',
+    weight: '',
+    dimensions: '',
+    capacity: '',
+    wattage: '',
+    color: '',
+    features: []
   };
 
-  productData.info = mockProductInfo;
+  // JANコード（13桁または8桁）
+  const janMatch = text.match(/\b(49\d{11}|\d{13}|\d{8})\b/);
+  if (janMatch) {
+    info.janCode = janMatch[1];
+  }
 
-  // 商品情報を表示
-  productDetails.innerHTML = `
-    <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #e0e7ff;">
-      <div style="margin-bottom: 12px;">
-        <strong>商品名：</strong>${mockProductInfo.name}
-      </div>
-      <div style="margin-bottom: 12px;">
-        <strong>ブランド：</strong>${mockProductInfo.brand}
-      </div>
-      <div style="margin-bottom: 12px;">
-        <strong>JANコード：</strong>${mockProductInfo.janCode}
-      </div>
-      <div style="margin-bottom: 12px;">
-        <strong>型番：</strong>${mockProductInfo.model}
-      </div>
-      <div style="margin-bottom: 12px;">
-        <strong>色：</strong>${mockProductInfo.color}
-      </div>
-      <div style="margin-bottom: 12px;">
-        <strong>容量：</strong>${mockProductInfo.capacity}
-      </div>
-      <div style="margin-bottom: 12px;">
-        <strong>消費電力：</strong>${mockProductInfo.wattage}
-      </div>
-      <div style="margin-bottom: 12px;">
-        <strong>寸法：</strong>${mockProductInfo.dimensions}
-      </div>
-      <div style="margin-bottom: 12px;">
-        <strong>重量：</strong>${mockProductInfo.weight}
-      </div>
-      <div>
-        <strong>特徴：</strong>
-        <ul style="margin-left: 20px; margin-top: 8px;">
-          ${mockProductInfo.features.map(f => `<li>${f}</li>`).join('')}
-        </ul>
-      </div>
-    </div>
-  `;
+  // 重量（kg、g）
+  const weightMatch = text.match(/(\d+\.?\d*)\s*(kg|g|キログラム|グラム)/i);
+  if (weightMatch) {
+    info.weight = weightMatch[1] + weightMatch[2];
+  }
+
+  // 寸法（cm、mm）
+  const dimensionMatch = text.match(/(\d+\.?\d*)\s*[x×]\s*(\d+\.?\d*)\s*[x×]\s*(\d+\.?\d*)\s*(cm|mm)/i);
+  if (dimensionMatch) {
+    info.dimensions = `${dimensionMatch[1]} × ${dimensionMatch[2]} × ${dimensionMatch[3]}${dimensionMatch[4]}`;
+  }
+
+  // 容量（L、ml）
+  const capacityMatch = text.match(/(\d+\.?\d*)\s*(l|ml|リットル|ミリリットル)/i);
+  if (capacityMatch) {
+    info.capacity = capacityMatch[1] + capacityMatch[2];
+  }
+
+  // ワット数
+  const wattageMatch = text.match(/(\d+)\s*(w|ワット)/i);
+  if (wattageMatch) {
+    info.wattage = wattageMatch[1] + 'W';
+  }
+
+  // 商品名（最初の行か、一番長い行を商品名として推測）
+  const lines = text.split('\n').filter(line => line.trim().length > 0);
+  if (lines.length > 0) {
+    // 最初の行か、最も長い行を商品名として取得
+    const longestLine = lines.reduce((a, b) => a.length > b.length ? a : b);
+    info.name = longestLine.trim().substring(0, 100); // 最大100文字
+  }
+
+  // その他の情報を特徴として保存
+  info.features = lines.slice(0, 5).map(line => line.trim());
+
+  return info;
 }
 
 // STEP 2: スクリーンショットアップロード
