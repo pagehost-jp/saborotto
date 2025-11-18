@@ -136,9 +136,11 @@ async function searchRakuten(janCode) {
 
     if (data.Items && data.Items.length > 0) {
       const item = data.Items[0].Item;
+      const itemName = item.itemName || '';
+
       return {
-        name: item.itemName || '',
-        brand: item.shopName || '',
+        name: itemName,
+        brand: extractBrandFromName(itemName),
         janCode: janCode,
         model: '',
         weight: '',
@@ -166,9 +168,11 @@ async function searchYahoo(janCode) {
 
     if (data.hits && data.hits.length > 0) {
       const item = data.hits[0];
+      const itemName = item.name || '';
+
       return {
-        name: item.name || '',
-        brand: item.seller ? item.seller.name : '',
+        name: itemName,
+        brand: extractBrandFromName(itemName),
         janCode: janCode,
         model: '',
         weight: '',
@@ -185,6 +189,47 @@ async function searchYahoo(janCode) {
     console.error('Yahoo! API エラー:', error);
     return null;
   }
+}
+
+// 商品名からブランド/メーカー名を抽出
+function extractBrandFromName(name) {
+  if (!name) return '';
+
+  // よくあるメーカー名のパターン
+  const brandPatterns = [
+    // 英語ブランド（最初の単語）
+    /^([A-Z][a-z]+|[A-Z]+)\s/,
+    // 日本語ブランド（カタカナ）
+    /^([ァ-ヴー]+)\s/,
+    // 括弧内のブランド
+    /【([^】]+)】/,
+    /\[([^\]]+)\]/,
+    /（([^）]+)）/,
+    /\(([^)]+)\)/
+  ];
+
+  for (const pattern of brandPatterns) {
+    const match = name.match(pattern);
+    if (match) {
+      const brand = match[1].trim();
+      // 明らかにブランドでない単語を除外
+      if (brand.length > 1 &&
+          !brand.includes('新品') &&
+          !brand.includes('中古') &&
+          !brand.includes('送料') &&
+          brand.length < 20) {
+        return brand;
+      }
+    }
+  }
+
+  // デフォルト：最初の単語を返す
+  const firstWord = name.split(/[\s　]/)[0];
+  if (firstWord && firstWord.length > 1 && firstWord.length < 20) {
+    return firstWord;
+  }
+
+  return '';
 }
 
 // 商品情報を表示
