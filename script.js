@@ -182,6 +182,9 @@ async function handleProductUpload(files) {
 
 // テキストから商品情報を抽出
 function extractProductInfo(text) {
+  // テキストを整形（余分なスペースを削除）
+  const cleanedText = text.replace(/\s+/g, ' ').trim();
+
   const info = {
     name: '',
     brand: '',
@@ -196,45 +199,91 @@ function extractProductInfo(text) {
   };
 
   // JANコード（13桁または8桁）
-  const janMatch = text.match(/\b(49\d{11}|\d{13}|\d{8})\b/);
+  const janMatch = cleanedText.match(/\b(49\d{11}|\d{13}|\d{8})\b/);
   if (janMatch) {
     info.janCode = janMatch[1];
   }
 
-  // 重量（kg、g）
-  const weightMatch = text.match(/(\d+\.?\d*)\s*(kg|g|キログラム|グラム)/i);
+  // 重量（kg、g）- より柔軟なパターンマッチング
+  const weightMatch = cleanedText.match(/(\d+\.?\d*)\s*k\s*g|(\d+\.?\d*)\s*キログラム|(\d+\.?\d*)\s*g\s*(?!x)|(\d+\.?\d*)\s*グラム/i);
   if (weightMatch) {
-    info.weight = weightMatch[1] + weightMatch[2];
+    const value = weightMatch[1] || weightMatch[2] || weightMatch[3] || weightMatch[4];
+    if (cleanedText.toLowerCase().includes('kg') || cleanedText.includes('キログラム')) {
+      info.weight = value + 'kg';
+    } else {
+      info.weight = value + 'g';
+    }
   }
 
   // 寸法（cm、mm）
-  const dimensionMatch = text.match(/(\d+\.?\d*)\s*[x×]\s*(\d+\.?\d*)\s*[x×]\s*(\d+\.?\d*)\s*(cm|mm)/i);
+  const dimensionMatch = cleanedText.match(/(\d+\.?\d*)\s*[x×]\s*(\d+\.?\d*)\s*[x×]\s*(\d+\.?\d*)\s*c\s*m|(\d+\.?\d*)\s*[x×]\s*(\d+\.?\d*)\s*[x×]\s*(\d+\.?\d*)\s*センチ/i);
   if (dimensionMatch) {
-    info.dimensions = `${dimensionMatch[1]} × ${dimensionMatch[2]} × ${dimensionMatch[3]}${dimensionMatch[4]}`;
+    if (dimensionMatch[1]) {
+      info.dimensions = `${dimensionMatch[1]} × ${dimensionMatch[2]} × ${dimensionMatch[3]}cm`;
+    } else {
+      info.dimensions = `${dimensionMatch[4]} × ${dimensionMatch[5]} × ${dimensionMatch[6]}cm`;
+    }
   }
 
   // 容量（L、ml）
-  const capacityMatch = text.match(/(\d+\.?\d*)\s*(l|ml|リットル|ミリリットル)/i);
+  const capacityMatch = cleanedText.match(/(\d+\.?\d*)\s*l\s*(?!x)|(\d+\.?\d*)\s*リットル|(\d+\.?\d*)\s*m\s*l|(\d+\.?\d*)\s*ミリリットル/i);
   if (capacityMatch) {
-    info.capacity = capacityMatch[1] + capacityMatch[2];
+    const value = capacityMatch[1] || capacityMatch[2] || capacityMatch[3] || capacityMatch[4];
+    if (cleanedText.toLowerCase().includes('ml') || cleanedText.includes('ミリリットル')) {
+      info.capacity = value + 'ml';
+    } else {
+      info.capacity = value + 'L';
+    }
   }
 
   // ワット数
-  const wattageMatch = text.match(/(\d+)\s*(w|ワット)/i);
+  const wattageMatch = cleanedText.match(/(\d+)\s*w\s*(?!x)|(\d+)\s*ワット/i);
   if (wattageMatch) {
-    info.wattage = wattageMatch[1] + 'W';
+    info.wattage = (wattageMatch[1] || wattageMatch[2]) + 'W';
   }
 
-  // 商品名（最初の行か、一番長い行を商品名として推測）
-  const lines = text.split('\n').filter(line => line.trim().length > 0);
+  // 商品名を抽出（ノイズを除外）
+  const lines = text.split('\n')
+    .map(line => line.trim())
+    .filter(line => {
+      // ノイズを除外（URL、UI要素など）
+      return line.length > 5 &&
+             line.length < 200 &&
+             !line.includes('http') &&
+             !line.includes('amazon.co') &&
+             !line.includes('Google') &&
+             !line.includes('ブックマーク') &&
+             !line.includes('編集') &&
+             !line.includes('表示');
+    });
+
   if (lines.length > 0) {
-    // 最初の行か、最も長い行を商品名として取得
-    const longestLine = lines.reduce((a, b) => a.length > b.length ? a : b);
-    info.name = longestLine.trim().substring(0, 100); // 最大100文字
+    // 商品名らしい行を探す（ナッツ、オーブン、などの商品関連キーワードを含む）
+    const productLine = lines.find(line =>
+      line.includes('ナッツ') ||
+      line.includes('オーブン') ||
+      line.includes('ミックス') ||
+      line.includes('アーモンド') ||
+      line.includes('くるみ') ||
+      line.includes('カシュー')
+    );
+
+    if (productLine) {
+      // スペースを削除して整形
+      info.name = productLine.replace(/\s+/g, '').substring(0, 100);
+    } else {
+      // 最も長い行を商品名とする
+      const longestLine = lines.reduce((a, b) => a.length > b.length ? a : b);
+      info.name = longestLine.replace(/\s+/g, '').substring(0, 100);
+    }
   }
 
-  // その他の情報を特徴として保存
-  info.features = lines.slice(0, 5).map(line => line.trim());
+  // その他の情報を特徴として保存（ノイズを除外）
+  info.features = lines
+    .slice(0, 10)
+    .filter(line => line.length > 10 && line.length < 150)
+    .map(line => line.replace(/\s+/g, '').substring(0, 80))
+    .slice(0, 5);
 
   return info;
 }
