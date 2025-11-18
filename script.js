@@ -1,4 +1,11 @@
 // DOM要素の取得
+const methodCards = document.querySelectorAll('.method-card');
+const methodSelectionSection = document.querySelector('.method-selection-section');
+const photoInputSection = document.getElementById('photo-input');
+const janInputSection = document.getElementById('jan-input');
+const apiInputSection = document.getElementById('api-input');
+const backBtns = document.querySelectorAll('.back-btn');
+
 const janCodeInput = document.getElementById('jan-code');
 const searchBtn = document.getElementById('search-btn');
 const uploadArea = document.getElementById('upload-area');
@@ -13,6 +20,48 @@ const adviceContent = document.getElementById('advice-content');
 
 // 商品情報を保存する変数
 let currentProduct = null;
+
+// 方法選択カードのクリックイベント
+methodCards.forEach(card => {
+  const btn = card.querySelector('.method-btn');
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const method = card.dataset.method;
+    showInputSection(method);
+  });
+});
+
+// 入力画面を表示
+function showInputSection(method) {
+  // 選択セクションを非表示
+  methodSelectionSection.style.display = 'none';
+
+  // 対応する入力セクションを表示
+  if (method === 'photo') {
+    photoInputSection.classList.remove('hidden');
+    photoInputSection.scrollIntoView({ behavior: 'smooth' });
+  } else if (method === 'jan') {
+    janInputSection.classList.remove('hidden');
+    janInputSection.scrollIntoView({ behavior: 'smooth' });
+  } else if (method === 'api') {
+    apiInputSection.classList.remove('hidden');
+    apiInputSection.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// 戻るボタンのクリックイベント
+backBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // 全ての入力セクションを非表示
+    photoInputSection.classList.add('hidden');
+    janInputSection.classList.add('hidden');
+    apiInputSection.classList.add('hidden');
+
+    // 選択セクションを表示
+    methodSelectionSection.style.display = 'block';
+    methodSelectionSection.scrollIntoView({ behavior: 'smooth' });
+  });
+});
 
 // JANコードで検索
 searchBtn.addEventListener('click', async () => {

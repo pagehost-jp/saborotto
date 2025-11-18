@@ -68,29 +68,68 @@
         </div>
       </section>
 
-      <!-- STEP 1: 商品情報収集 -->
-      <section class="step-section" id="step1">
+      <!-- 情報収集方法の選択 -->
+      <section class="method-selection-section">
         <div class="step-header">
           <span class="step-number">STEP 1</span>
-          <h2>商品情報を教えてください</h2>
+          <h2>商品情報の取得方法を選んでください</h2>
         </div>
+        <p style="text-align: center; margin-bottom: 24px; color: #666;">
+          信憑性の高い方法から順に並んでいます。最も確実なのは実物の写真です。
+        </p>
 
-        <div class="input-group">
-          <label for="jan-code">JANコード / ISBNコード</label>
-          <div class="input-with-button">
-            <input
-              type="text"
-              id="jan-code"
-              placeholder="4901234567890"
-              pattern="[0-9]{8,13}"
-            >
-            <button id="search-btn" class="primary-btn">商品を検索</button>
+        <div class="method-cards">
+          <div class="method-card recommended" data-method="photo">
+            <div class="method-badge">おすすめ</div>
+            <div class="method-icon">📸</div>
+            <h3>実物の商品写真</h3>
+            <div class="reliability-badge high">信憑性：最高</div>
+            <p>
+              商品パッケージの写真から、JANコードや商品情報を自動的に読み取ります。
+              最も正確で信頼できる方法です。
+            </p>
+            <button class="method-btn">この方法で取得する</button>
           </div>
-          <p class="help-text">13桁または8桁の数字を入力してください</p>
+
+          <div class="method-card" data-method="jan">
+            <div class="method-icon">🔢</div>
+            <h3>JANコードを入力</h3>
+            <div class="reliability-badge medium">信憑性：高</div>
+            <p>
+              商品のJANコード（バーコードの数字）を手入力します。
+              基本情報は正確ですが、詳細説明が不足する場合があります。
+            </p>
+            <button class="method-btn">この方法で取得する</button>
+          </div>
+
+          <div class="method-card" data-method="api">
+            <div class="method-icon">🛍️</div>
+            <h3>楽天APIで検索</h3>
+            <div class="reliability-badge low">信憑性：中（要確認）</div>
+            <p>
+              JANコードから楽天の商品データベースを検索します。
+              参考情報として利用し、必ず内容を確認してください。
+            </p>
+            <button class="method-btn">この方法で取得する</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 実物写真アップロード -->
+      <section class="input-section hidden" id="photo-input">
+        <div class="step-header">
+          <span class="step-number">STEP 1-A</span>
+          <h2>商品写真をアップロード</h2>
         </div>
 
-        <div class="divider">
-          <span>または</span>
+        <div class="instruction-box">
+          <strong>📷 撮影のポイント：</strong>
+          <ul>
+            <li>JANコード（バーコード）が読み取れるように明るく撮影</li>
+            <li>商品名やメーカー名が見えるように</li>
+            <li>商品の特徴や説明文も写るとベスト</li>
+            <li>複数枚アップロード可能です</li>
+          </ul>
         </div>
 
         <div class="upload-area" id="upload-area">
@@ -100,11 +139,79 @@
               <polyline points="17 8 12 3 7 8"></polyline>
               <line x1="12" y1="3" x2="12" y2="15"></line>
             </svg>
-            <p>商品パッケージの写真をドロップ</p>
-            <p class="small">またはクリックして画像を選択</p>
+            <p>商品写真をドロップ</p>
+            <p class="small">またはクリックして画像を選択（複数枚OK）</p>
           </div>
           <input type="file" id="image-upload" accept="image/*" multiple hidden>
         </div>
+
+        <button class="back-btn">← 方法を変更する</button>
+      </section>
+
+      <!-- JANコード入力 -->
+      <section class="input-section hidden" id="jan-input">
+        <div class="step-header">
+          <span class="step-number">STEP 1-B</span>
+          <h2>JANコードを入力</h2>
+        </div>
+
+        <div class="instruction-box">
+          <strong>🔢 JANコードの確認方法：</strong>
+          <ul>
+            <li>商品パッケージのバーコード下にある数字です</li>
+            <li>13桁または8桁の数字を入力してください</li>
+            <li>本の場合はISBNコード（978から始まる13桁）でもOK</li>
+          </ul>
+        </div>
+
+        <div class="input-group">
+          <label for="jan-code">JANコード / ISBNコード</label>
+          <div class="input-with-button">
+            <input
+              type="text"
+              id="jan-code"
+              placeholder="例：4901234567890"
+              pattern="[0-9]{8,13}"
+            >
+            <button id="search-btn" class="primary-btn">商品を検索</button>
+          </div>
+          <p class="help-text">数字のみ入力してください（ハイフン不要）</p>
+        </div>
+
+        <button class="back-btn">← 方法を変更する</button>
+      </section>
+
+      <!-- API検索 -->
+      <section class="input-section hidden" id="api-input">
+        <div class="step-header">
+          <span class="step-number">STEP 1-C</span>
+          <h2>楽天APIで検索</h2>
+        </div>
+
+        <div class="instruction-box warning">
+          <strong>⚠️ 注意事項：</strong>
+          <ul>
+            <li>この方法で取得した情報は<strong>必ず確認</strong>してください</li>
+            <li>複数の出品者情報が混在している可能性があります</li>
+            <li>実物と異なる場合は手動で修正してください</li>
+          </ul>
+        </div>
+
+        <div class="input-group">
+          <label for="api-jan-code">JANコード</label>
+          <div class="input-with-button">
+            <input
+              type="text"
+              id="api-jan-code"
+              placeholder="例：4901234567890"
+              pattern="[0-9]{8,13}"
+            >
+            <button id="api-search-btn" class="primary-btn">楽天で検索</button>
+          </div>
+          <p class="help-text">JANコードで楽天の商品データベースを検索します</p>
+        </div>
+
+        <button class="back-btn">← 方法を変更する</button>
 
         <div id="product-info" class="product-info hidden">
           <h3>取得した商品情報</h3>
