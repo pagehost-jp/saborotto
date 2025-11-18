@@ -203,6 +203,8 @@ if (screenshotUploadArea && screenshotUpload) {
     const files = e.target.files;
     if (files.length > 0) {
       await handleScreenshotUpload(files[0]);
+      // 同じファイルを再度選択できるようにリセット
+      e.target.value = '';
     }
   });
 }
@@ -215,16 +217,36 @@ async function handleScreenshotUpload(file) {
 
   if (screenshotAdvice) {
     screenshotAdvice.classList.remove('hidden');
-    screenshotAdvice.innerHTML = '<p style="text-align: center;">解析中...</p>';
+
+    // ファイルを読み込んでプレビュー表示
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      screenshotAdvice.innerHTML = `
+        <div style="margin-bottom: 20px; text-align: center;">
+          <h4 style="color: #667eea; margin-bottom: 12px;">📷 アップロードされたスクリーンショット</h4>
+          <img src="${e.target.result}" style="max-width: 100%; max-height: 300px; border-radius: 8px; border: 2px solid #e0e7ff;">
+        </div>
+        <p style="text-align: center; color: #888;">解析中...</p>
+      `;
+    };
+    reader.readAsDataURL(file);
 
     // シミュレーション（実際はAI APIを使用）
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     const product = productData.info;
 
-    // スクリーンショットの内容に応じた回答を生成（シミュレーション）
-    screenshotAdvice.innerHTML = `
-      <h4 style="color: #667eea; margin-bottom: 16px;">📋 入力アドバイス</h4>
+    // ファイルを再度読み込んで、解析結果と一緒に表示
+    const reader2 = new FileReader();
+    reader2.onload = (e) => {
+      // スクリーンショットの内容に応じた回答を生成（シミュレーション）
+      screenshotAdvice.innerHTML = `
+        <div style="margin-bottom: 20px; text-align: center;">
+          <h4 style="color: #667eea; margin-bottom: 12px;">📷 アップロードされたスクリーンショット</h4>
+          <img src="${e.target.result}" style="max-width: 100%; max-height: 300px; border-radius: 8px; border: 2px solid #e0e7ff;">
+        </div>
+
+        <h4 style="color: #667eea; margin-bottom: 16px;">📋 入力アドバイス</h4>
 
       <div style="background: #f5f7ff; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
         <strong>この項目には以下の情報を入力してください：</strong>
@@ -318,9 +340,16 @@ async function handleScreenshotUpload(file) {
 
       <div style="margin-top: 16px; padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 3px solid #0ea5e9;">
         <strong>📸 別の項目がわからない場合：</strong><br>
-        再度スクリーンショットをアップロードしてください。同じ商品情報をもとに回答します。
+        画面を上にスクロールして、再度スクリーンショットをアップロードしてください。<br>
+        同じ商品情報をもとに回答します。
       </div>
+
+      <button onclick="document.getElementById('screenshot-upload-area').scrollIntoView({ behavior: 'smooth', block: 'center' })" style="margin-top: 20px; width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+        ↑ 別の項目を質問する
+      </button>
     `;
+    };
+    reader2.readAsDataURL(file);
   }
 }
 
