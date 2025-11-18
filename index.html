@@ -80,69 +80,57 @@
         </div>
 
         <div class="guide-content">
-          <p class="guide-text">
+          <p class="guide-text" style="text-align: center; font-size: 18px; margin: 40px 0;">
             Amazonで埋まらなかった項目がありますか？<br>
-            サボに商品の情報を教えてください。商品パッケージの写真をアップロードすることで、サボが商品情報を記憶します。
+            <strong>商品のJANコード（バーコードの番号）を入力してください。</strong>
           </p>
 
-          <h3>📸 推奨：以下の写真を撮影してアップロード</h3>
-
-          <div class="photo-tips">
-            <div class="tip-card">
-              <div class="tip-icon">📦</div>
-              <h4>1. パッケージ全体</h4>
-              <ul>
-                <li>商品名が読める</li>
-                <li>ブランド名が見える</li>
-                <li>パッケージ全体が写っている</li>
-                <li>明るく、ピントが合っている</li>
-              </ul>
-            </div>
-
-            <div class="tip-card">
-              <div class="tip-icon">🔢</div>
-              <h4>2. JANコード・バーコード</h4>
-              <ul>
-                <li>バーコードがはっきり写っている</li>
-                <li>数字が読める（13桁または8桁）</li>
-                <li>ぼやけていない</li>
-              </ul>
-            </div>
-
-            <div class="tip-card">
-              <div class="tip-icon">📝</div>
-              <h4>3. 商品の仕様・説明</h4>
-              <ul>
-                <li>商品の仕様が書かれている面</li>
-                <li>型番・メーカー名</li>
-                <li>容量・サイズ・重量など</li>
-                <li>特徴やセールスポイント</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="upload-area-product" id="product-upload-area">
-            <div class="upload-content">
-              <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-              </svg>
-              <p><strong>商品写真をアップロード</strong></p>
-              <p class="small">クリックまたはドラッグ&ドロップ（複数枚OK）</p>
-            </div>
-            <input type="file" id="product-upload" accept="image/*" multiple hidden>
-          </div>
-
-          <div id="product-preview" class="product-preview hidden">
-            <h4>📷 アップロードされた写真</h4>
-            <div id="preview-images" class="preview-images"></div>
+          <div style="max-width: 500px; margin: 0 auto;">
+            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333;">
+              🔢 JANコード（13桁または8桁）
+            </label>
+            <input
+              type="text"
+              id="jan-input"
+              placeholder="4901234567890"
+              style="width: 100%; padding: 16px; font-size: 18px; border: 2px solid #d0d0d0; border-radius: 8px; text-align: center; font-family: monospace;"
+              maxlength="13"
+            >
+            <button onclick="searchByJAN()" style="width: 100%; margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
+              🔍 商品情報を検索
+            </button>
           </div>
 
           <div id="product-info" class="product-info hidden">
-            <h4 style="color: #667eea; margin-bottom: 16px;">✅ 商品情報を記憶しました</h4>
+            <h4 style="color: #667eea; margin-bottom: 16px;">✅ 商品情報を取得しました</h4>
             <div id="product-details" class="product-details"></div>
-            <button onclick="resetProductUpload()" style="margin-top: 20px; padding: 12px 24px; background: #f44; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
-              🗑️ 写真を削除してやり直す
+            <button onclick="resetProductInfo()" style="margin-top: 20px; padding: 12px 24px; background: #f44; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+              🗑️ リセットして別の商品を検索
             </button>
+          </div>
+
+          <div id="jan-not-found" class="hidden" style="margin-top: 40px; padding: 24px; background: #fff8e1; border-radius: 12px; border-left: 4px solid #ffc107;">
+            <h4 style="color: #ff9800; margin-bottom: 12px;">⚠️ 商品が見つかりませんでした</h4>
+            <p style="margin-bottom: 16px;">
+              JANコードで商品情報が見つかりませんでした。<br>
+              商品パッケージの写真をアップロードしてください。
+            </p>
+
+            <div class="upload-area-product" id="product-upload-area">
+              <div class="upload-content">
+                <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                </svg>
+                <p><strong>商品写真をアップロード</strong></p>
+                <p class="small">クリックまたはドラッグ&ドロップ（複数枚OK）</p>
+              </div>
+              <input type="file" id="product-upload" accept="image/*" multiple hidden>
+            </div>
+
+            <div id="product-preview" class="product-preview hidden">
+              <h4>📷 アップロードされた写真</h4>
+              <div id="preview-images" class="preview-images"></div>
+            </div>
           </div>
 
           <button class="next-btn" onclick="showStep2()">次へ：わからないところをサボに質問 →</button>

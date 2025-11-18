@@ -4,6 +4,10 @@ let productData = {
   info: null
 };
 
+// API Keys
+const RAKUTEN_APP_ID = '1033125456585026326';
+const YAHOO_APP_ID = '1015356078042672319';
+
 // ステップ間の移動
 function showStep0() {
   document.querySelectorAll('.step-section').forEach(section => {
@@ -50,6 +54,164 @@ function resetProductUpload() {
     // アップロードエリアにスクロール
     document.getElementById('product-upload-area').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
+}
+
+// 商品情報をリセット（JAN検索用）
+function resetProductInfo() {
+  productData.info = null;
+  document.getElementById('product-info').classList.add('hidden');
+  document.getElementById('jan-not-found').classList.add('hidden');
+  document.getElementById('jan-input').value = '';
+  document.getElementById('jan-input').focus();
+}
+
+// JANコードで商品検索
+async function searchByJAN() {
+  const janInput = document.getElementById('jan-input');
+  const janCode = janInput.value.trim();
+
+  if (!janCode) {
+    alert('JANコードを入力してください');
+    return;
+  }
+
+  if (!/^\d{8}$|^\d{13}$/.test(janCode)) {
+    alert('JANコードは8桁または13桁の数字で入力してください');
+    return;
+  }
+
+  // ローディング表示
+  const productInfo = document.getElementById('product-info');
+  const productDetails = document.getElementById('product-details');
+  productInfo.classList.remove('hidden');
+  productDetails.innerHTML = `
+    <p style="text-align: center; color: #888;">
+      <span style="display: inline-block; width: 20px; height: 20px; border: 3px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span><br>
+      商品情報を検索中...
+    </p>
+    <style>
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  `;
+
+  try {
+    // まず楽天APIで検索
+    let productInfo = await searchRakuten(janCode);
+
+    // 楽天で見つからなければYahoo!で検索
+    if (!productInfo) {
+      productInfo = await searchYahoo(janCode);
+    }
+
+    if (productInfo) {
+      // 商品情報を保存
+      productData.info = productInfo;
+
+      // 商品情報を表示
+      displayProductInfo(productInfo);
+
+      // エラーメッセージを非表示
+      document.getElementById('jan-not-found').classList.add('hidden');
+    } else {
+      // 見つからなかった場合
+      document.getElementById('product-info').classList.add('hidden');
+      document.getElementById('jan-not-found').classList.remove('hidden');
+    }
+
+  } catch (error) {
+    console.error('検索エラー:', error);
+    alert('商品情報の取得中にエラーが発生しました。もう一度お試しください。');
+    document.getElementById('product-info').classList.add('hidden');
+  }
+}
+
+// 楽天APIで検索
+async function searchRakuten(janCode) {
+  try {
+    const url = `https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?format=json&applicationId=${RAKUTEN_APP_ID}&keyword=${janCode}&hits=1`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.Items && data.Items.length > 0) {
+      const item = data.Items[0].Item;
+      return {
+        name: item.itemName || '',
+        brand: item.shopName || '',
+        janCode: janCode,
+        model: '',
+        weight: '',
+        dimensions: '',
+        capacity: '',
+        wattage: '',
+        color: '',
+        price: item.itemPrice ? `¥${item.itemPrice.toLocaleString()}` : '',
+        features: [item.itemCaption || ''].filter(f => f)
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('楽天API エラー:', error);
+    return null;
+  }
+}
+
+// Yahoo!ショッピングAPIで検索
+async function searchYahoo(janCode) {
+  try {
+    const url = `https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch?appid=${YAHOO_APP_ID}&jan_code=${janCode}&results=1`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.hits && data.hits.length > 0) {
+      const item = data.hits[0];
+      return {
+        name: item.name || '',
+        brand: item.seller ? item.seller.name : '',
+        janCode: janCode,
+        model: '',
+        weight: '',
+        dimensions: '',
+        capacity: '',
+        wattage: '',
+        color: '',
+        price: item.price ? `¥${parseInt(item.price).toLocaleString()}` : '',
+        features: [item.description || ''].filter(f => f)
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Yahoo! API エラー:', error);
+    return null;
+  }
+}
+
+// 商品情報を表示
+function displayProductInfo(info) {
+  const productDetails = document.getElementById('product-details');
+  productDetails.innerHTML = `
+    <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #e0e7ff;">
+      <div style="margin-bottom: 12px;">
+        <strong>商品名：</strong>${info.name || '（取得できませんでした）'}
+      </div>
+      ${info.brand ? `<div style="margin-bottom: 12px;"><strong>ブランド/ショップ：</strong>${info.brand}</div>` : ''}
+      ${info.janCode ? `<div style="margin-bottom: 12px;"><strong>JANコード：</strong>${info.janCode}</div>` : ''}
+      ${info.price ? `<div style="margin-bottom: 12px;"><strong>参考価格：</strong>${info.price}</div>` : ''}
+      ${info.features && info.features.length > 0 ? `
+        <div>
+          <strong>説明：</strong>
+          <div style="margin-top: 8px; padding: 12px; background: #f9f9f9; border-radius: 4px; font-size: 14px;">
+            ${info.features[0].substring(0, 200)}${info.features[0].length > 200 ? '...' : ''}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+    <div style="margin-top: 16px; padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 3px solid #0ea5e9;">
+      <strong>✅ 商品情報を取得しました</strong><br>
+      この情報をもとに、STEP 2でわからない項目についてアドバイスします。
+    </div>
+  `;
 }
 
 // STEP 0: 商品写真アップロード
