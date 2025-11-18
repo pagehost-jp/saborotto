@@ -71,6 +71,102 @@ h3 {
   margin-bottom: 16px;
 }
 
+.info-section {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 32px;
+  border: 2px solid #e0e7ff;
+}
+
+.info-section h3 {
+  font-size: 22px;
+  color: #333;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.info-text {
+  text-align: center;
+  line-height: 1.8;
+  margin-bottom: 24px;
+  color: #555;
+}
+
+.reliability-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.reliability-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+}
+
+.reliability-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.reliability-card h4 {
+  font-size: 16px;
+  margin: 12px 0 8px 0;
+  color: #333;
+}
+
+.reliability-card p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #666;
+}
+
+.reliability-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.reliability-icon {
+  font-size: 24px;
+}
+
+.reliability-level {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.reliability-card.high .reliability-level {
+  background: #d4edda;
+  color: #155724;
+}
+
+.reliability-card.medium .reliability-level {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.reliability-card.low .reliability-level {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.info-note {
+  background: white;
+  border-left: 4px solid #667eea;
+  padding: 16px;
+  border-radius: 8px;
+  line-height: 1.8;
+  color: #555;
+}
+
 .input-group {
   margin-bottom: 24px;
 }

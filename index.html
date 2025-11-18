@@ -14,6 +14,60 @@
     </header>
 
     <main>
+      <!-- 信憑性についての説明 -->
+      <section class="info-section">
+        <h3>📋 商品情報の信憑性について</h3>
+        <p class="info-text">
+          Amazonせどりで最も重要なのは、<strong>正確な商品情報</strong>です。<br>
+          間違った情報を登録すると、アカウント停止のリスクがあります。
+        </p>
+
+        <div class="reliability-cards">
+          <div class="reliability-card high">
+            <div class="reliability-header">
+              <span class="reliability-icon">📸</span>
+              <span class="reliability-level">信憑性：最高</span>
+            </div>
+            <h4>実物の商品写真</h4>
+            <p>
+              あなた自身が撮影した商品パッケージの写真が<strong>最も信頼できる情報源</strong>です。
+              パッケージに記載されている情報を直接読み取ります。
+            </p>
+          </div>
+
+          <div class="reliability-card medium">
+            <div class="reliability-header">
+              <span class="reliability-icon">🔢</span>
+              <span class="reliability-level">信憑性：高</span>
+            </div>
+            <h4>JANコード公式データベース</h4>
+            <p>
+              JANコードから取得できる基本情報（メーカー、商品名など）も信頼できます。
+              ただし、詳細な商品説明は含まれない場合があります。
+            </p>
+          </div>
+
+          <div class="reliability-card low">
+            <div class="reliability-header">
+              <span class="reliability-icon">🛍️</span>
+              <span class="reliability-level">信憑性：中（要確認）</span>
+            </div>
+            <h4>外部API（楽天など）</h4>
+            <p>
+              楽天などのAPIでも情報を取得できますが、複数の出品者情報が混在している可能性があります。
+              <strong>参考程度</strong>にして、必ず最終確認してください。
+            </p>
+          </div>
+        </div>
+
+        <div class="info-note">
+          <strong>💡 このツールの仕組み：</strong><br>
+          サボは、最も信憑性の高い情報源から順に商品情報を収集します。
+          商品写真がある場合はそこから優先的に情報を抽出し、不足している情報のみを他の情報源から補完します。
+          <strong>最終的には必ずあなた自身で確認・編集できます。</strong>
+        </div>
+      </section>
+
       <!-- STEP 1: 商品情報収集 -->
       <section class="step-section" id="step1">
         <div class="step-header">
