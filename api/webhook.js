@@ -1,5 +1,7 @@
 // Stripe Webhookハンドラー - 決済完了時の処理
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY?.trim());
+const rawStripeKey = process.env.STRIPE_SECRET_KEY || '';
+const stripeKey = rawStripeKey.trim().replace(/^["']|["']$/g, '');
+const stripe = require('stripe')(stripeKey);
 const admin = require('firebase-admin');
 
 // Firebase Admin初期化（複数回初期化を防ぐ）

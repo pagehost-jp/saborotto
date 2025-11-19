@@ -1,14 +1,7 @@
 // Stripe Checkoutセッション作成API
-const stripeKey = process.env.STRIPE_SECRET_KEY?.trim();
-
-// デバッグログ
-console.log('STRIPE_SECRET_KEY check:', {
-  isDefined: !!process.env.STRIPE_SECRET_KEY,
-  lengthBefore: process.env.STRIPE_SECRET_KEY?.length,
-  lengthAfter: stripeKey?.length,
-  startsWithCorrectPrefix: stripeKey?.startsWith('sk_test_'),
-  first15Chars: stripeKey?.substring(0, 15)
-});
+// 環境変数から値を取得し、trim + クォート削除
+const rawKey = process.env.STRIPE_SECRET_KEY || '';
+const stripeKey = rawKey.trim().replace(/^["']|["']$/g, '');
 
 const stripe = require('stripe')(stripeKey);
 
