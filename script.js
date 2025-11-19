@@ -8,6 +8,53 @@ let productData = {
 const RAKUTEN_APP_ID = '1033125456585026326';
 const YAHOO_APP_ID = '1015356078042672319';
 
+// Gemini APIキーのみlocalStorageから取得
+function getAPIKey(keyName) {
+  return localStorage.getItem(keyName) || '';
+}
+
+const GEMINI_API_KEY = () => getAPIKey('gemini_api_key');
+
+// 設定画面の表示/非表示
+function showSettings() {
+  // 現在の設定を読み込み
+  document.getElementById('gemini-api-key').value = getAPIKey('gemini_api_key');
+
+  document.getElementById('settings-modal').style.display = 'block';
+}
+
+function closeSettings() {
+  document.getElementById('settings-modal').style.display = 'none';
+}
+
+function saveSettings() {
+  const geminiKey = document.getElementById('gemini-api-key').value.trim();
+
+  // 必須チェック（Geminiのみ）
+  if (!geminiKey) {
+    alert('Gemini API キーは必須です。');
+    return;
+  }
+
+  // 保存
+  localStorage.setItem('gemini_api_key', geminiKey);
+
+  alert('✅ 設定を保存しました！');
+  closeSettings();
+}
+
+// 初回起動チェック
+function checkAPIKeys() {
+  if (!getAPIKey('gemini_api_key')) {
+    // 初回起動または未設定
+    setTimeout(() => {
+      if (confirm('サボロットを使うには、APIキーの設定が必要です。\n設定画面を開きますか？')) {
+        showSettings();
+      }
+    }, 1000);
+  }
+}
+
 // ステップ間の移動
 function showStep0() {
   document.querySelectorAll('.step-section').forEach(section => {
@@ -108,6 +155,9 @@ async function searchByJAN() {
     if (productInfo) {
       // 商品情報を保存
       productData.info = productInfo;
+
+      // デバッグ：取得した商品情報をログ出力
+      console.log('取得した商品情報:', productInfo);
 
       // 商品情報を表示
       displayProductInfo(productInfo);
@@ -305,19 +355,34 @@ if (productUploadArea && productUpload) {
 async function handleProductUpload(files) {
   // 画像プレビューを表示
   productPreview.classList.remove('hidden');
-  previewImages.innerHTML = '';
-  productData.images = [];
 
-  const imageDataArray = [];
+  // 既存の画像数を確認
+  const currentImageCount = productData.images.length;
+  const remainingSlots = 3 - currentImageCount;
 
-  for (let i = 0; i < files.length; i++) {
+  if (remainingSlots <= 0) {
+    alert('画像は最大3枚までです。削除してから追加してください。');
+    return;
+  }
+
+  // 追加できる枚数
+  const imagesToAdd = Math.min(files.length, remainingSlots);
+
+  for (let i = 0; i < imagesToAdd; i++) {
     const file = files[i];
     const reader = new FileReader();
 
     await new Promise((resolve) => {
       reader.onload = (e) => {
+        const imageData = e.target.result;
+
+        // プレビュー画像を作成
+        const imgContainer = document.createElement('div');
+        imgContainer.style.position = 'relative';
+        imgContainer.style.display = 'inline-block';
+
         const img = document.createElement('img');
-        img.src = e.target.result;
+        img.src = imageData;
         img.style.width = '150px';
         img.style.height = '150px';
         img.style.objectFit = 'cover';
@@ -325,22 +390,76 @@ async function handleProductUpload(files) {
         img.style.border = '2px solid #e0e0e0';
         img.style.marginRight = '12px';
         img.style.marginBottom = '12px';
-        previewImages.appendChild(img);
 
-        productData.images.push(e.target.result);
-        imageDataArray.push(e.target.result);
+        // 削除ボタンを追加
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = '×';
+        deleteBtn.style.position = 'absolute';
+        deleteBtn.style.top = '5px';
+        deleteBtn.style.right = '17px';
+        deleteBtn.style.width = '25px';
+        deleteBtn.style.height = '25px';
+        deleteBtn.style.borderRadius = '50%';
+        deleteBtn.style.background = '#f44';
+        deleteBtn.style.color = 'white';
+        deleteBtn.style.border = 'none';
+        deleteBtn.style.cursor = 'pointer';
+        deleteBtn.style.fontSize = '18px';
+        deleteBtn.style.fontWeight = 'bold';
+        deleteBtn.style.lineHeight = '1';
+        deleteBtn.onclick = () => {
+          const index = productData.images.indexOf(imageData);
+          if (index > -1) {
+            productData.images.splice(index, 1);
+            imgContainer.remove();
+            if (productData.images.length === 0) {
+              productPreview.classList.add('hidden');
+              productInfo.classList.add('hidden');
+            }
+          }
+        };
+
+        imgContainer.appendChild(img);
+        imgContainer.appendChild(deleteBtn);
+        previewImages.appendChild(imgContainer);
+
+        productData.images.push(imageData);
         resolve();
       };
       reader.readAsDataURL(file);
     });
   }
 
-  // OCRで商品情報を読み取る
+  if (imagesToAdd < files.length) {
+    alert(`画像は最大3枚までです。${imagesToAdd}枚を追加しました。`);
+  }
+
+  // 解析ボタンを表示
+  showAnalyzeButton();
+}
+
+// 解析ボタンを表示
+function showAnalyzeButton() {
   productInfo.classList.remove('hidden');
+  productDetails.innerHTML = `
+    <div style="text-align: center; padding: 20px;">
+      <p style="margin-bottom: 16px; color: #555;">
+        <strong>${productData.images.length}枚の画像</strong>がアップロードされました。<br>
+        ${productData.images.length < 3 ? '<span style="color: #888; font-size: 14px;">（さらに追加することもできます）</span>' : ''}
+      </p>
+      <button onclick="analyzeProductImages()" style="padding: 16px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+        🤖 AIで商品情報を解析する
+      </button>
+    </div>
+  `;
+}
+
+// 商品画像を解析
+async function analyzeProductImages() {
   productDetails.innerHTML = `
     <p style="text-align: center; color: #888;">
       <span style="display: inline-block; width: 20px; height: 20px; border: 3px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span><br>
-      商品情報を読み取っています...
+      AIが商品情報を解析しています...
     </p>
     <style>
       @keyframes spin {
@@ -350,62 +469,32 @@ async function handleProductUpload(files) {
   `;
 
   try {
-    let allText = '';
+    // Gemini APIで商品写真を解析
+    const extractedInfo = await analyzeProductImagesWithGemini(productData.images);
 
-    // 全ての画像からテキストを読み取る
-    for (let i = 0; i < imageDataArray.length; i++) {
-      const { data: { text } } = await Tesseract.recognize(
-        imageDataArray[i],
-        'jpn+eng',
-        {
-          logger: m => console.log(m)
-        }
-      );
-      allText += text + '\n';
+    // JANコードも抽出できていればJANコードプロパティを追加
+    if (!extractedInfo.janCode) {
+      extractedInfo.janCode = '';
     }
 
-    console.log('商品情報OCR結果:', allText);
-
-    // テキストから商品情報を抽出
-    const extractedInfo = extractProductInfo(allText);
     productData.info = extractedInfo;
 
+    console.log('抽出された商品情報:', extractedInfo);
+
     // 商品情報を表示
-    productDetails.innerHTML = `
-      <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #e0e7ff;">
-        <div style="margin-bottom: 12px;">
-          <strong>商品名：</strong>${extractedInfo.name || '（読み取れませんでした）'}
-        </div>
-        ${extractedInfo.brand ? `<div style="margin-bottom: 12px;"><strong>ブランド：</strong>${extractedInfo.brand}</div>` : ''}
-        ${extractedInfo.janCode ? `<div style="margin-bottom: 12px;"><strong>JANコード：</strong>${extractedInfo.janCode}</div>` : ''}
-        ${extractedInfo.model ? `<div style="margin-bottom: 12px;"><strong>型番：</strong>${extractedInfo.model}</div>` : ''}
-        ${extractedInfo.weight ? `<div style="margin-bottom: 12px;"><strong>重量：</strong>${extractedInfo.weight}</div>` : ''}
-        ${extractedInfo.dimensions ? `<div style="margin-bottom: 12px;"><strong>寸法：</strong>${extractedInfo.dimensions}</div>` : ''}
-        ${extractedInfo.capacity ? `<div style="margin-bottom: 12px;"><strong>容量：</strong>${extractedInfo.capacity}</div>` : ''}
-        ${extractedInfo.wattage ? `<div style="margin-bottom: 12px;"><strong>消費電力：</strong>${extractedInfo.wattage}</div>` : ''}
-        ${extractedInfo.color ? `<div style="margin-bottom: 12px;"><strong>色：</strong>${extractedInfo.color}</div>` : ''}
-        ${extractedInfo.features && extractedInfo.features.length > 0 ? `
-          <div>
-            <strong>その他の情報：</strong>
-            <ul style="margin-left: 20px; margin-top: 8px;">
-              ${extractedInfo.features.map(f => `<li>${f}</li>`).join('')}
-            </ul>
-          </div>
-        ` : ''}
-      </div>
-      <div style="margin-top: 16px; padding: 16px; background: #fff8e1; border-radius: 8px; border-left: 3px solid #ffc107;">
-        <strong>💡 ヒント：</strong><br>
-        上記の情報が正しいか確認してください。情報が不足している場合は、より鮮明な写真を撮り直してアップロードしてください。
-      </div>
-    `;
+    displayProductInfo(extractedInfo);
 
   } catch (error) {
     console.error('商品情報読み取りエラー:', error);
     productDetails.innerHTML = `
       <div style="background: #fee; padding: 16px; border-radius: 8px; border-left: 3px solid #f44;">
         <strong>⚠️ エラー：</strong><br>
-        商品情報の読み取りに失敗しました。もう一度試してください。
+        商品情報の読み取りに失敗しました。もう一度試してください。<br>
+        <small style="color: #999;">${error.message}</small>
       </div>
+      <button onclick="analyzeProductImages()" style="margin-top: 20px; padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+        🔄 もう一度解析する
+      </button>
     `;
   }
 }
@@ -562,7 +651,7 @@ if (screenshotUploadArea && screenshotUpload) {
 
 async function handleScreenshotUpload(file) {
   if (!productData.info) {
-    alert('先にSTEP 0で商品情報を登録してください。');
+    alert('先にSTEP 1でJANコードを入力して商品情報を登録してください。');
     return;
   }
 
@@ -580,7 +669,7 @@ async function handleScreenshotUpload(file) {
         </div>
         <p style="text-align: center; color: #888;">
           <span style="display: inline-block; width: 20px; height: 20px; border: 3px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span><br>
-          文字を読み取っています...
+          AIが画像を解析しています...
         </p>
         <style>
           @keyframes spin {
@@ -590,26 +679,28 @@ async function handleScreenshotUpload(file) {
       `;
 
       try {
-        // OCRで文字を読み取る
-        const { data: { text } } = await Tesseract.recognize(
-          imageData,
-          'jpn+eng',
-          {
-            logger: m => console.log(m)
-          }
-        );
+        // Gemini APIで画像を解析
+        const aiResponse = await analyzeScreenshotWithGemini(imageData, productData.info);
 
-        console.log('OCR結果:', text);
+        // AIの回答を表示
+        screenshotAdvice.innerHTML = `
+          <div style="margin-bottom: 20px; text-align: center;">
+            <h4 style="color: #667eea; margin-bottom: 12px;">📷 アップロードされたスクリーンショット</h4>
+            <img src="${imageData}" style="max-width: 100%; max-height: 300px; border-radius: 8px; border: 2px solid #e0e7ff;">
+          </div>
 
-        // キーワードマッチングで該当項目を検出
-        const detectedFields = detectFieldsFromText(text);
+          <div style="background: #f5f7ff; padding: 20px; border-radius: 8px; border: 2px solid #667eea; margin-bottom: 16px;">
+            <h4 style="color: #667eea; margin-bottom: 16px;">🤖 サボロットのアドバイス</h4>
+            <div style="line-height: 1.8; white-space: pre-wrap;">${aiResponse}</div>
+          </div>
 
-        // 検出された項目のアドバイスを生成
-        const adviceHTML = generateAdviceForFields(detectedFields, productData.info, imageData);
-        screenshotAdvice.innerHTML = adviceHTML;
+          <button onclick="document.getElementById('screenshot-upload-area').scrollIntoView({ behavior: 'smooth', block: 'center' })" style="margin-top: 20px; width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+            ↑ 別の項目を質問する
+          </button>
+        `;
 
       } catch (error) {
-        console.error('OCRエラー:', error);
+        console.error('AI解析エラー:', error);
         screenshotAdvice.innerHTML = `
           <div style="margin-bottom: 20px; text-align: center;">
             <h4 style="color: #667eea; margin-bottom: 12px;">📷 アップロードされたスクリーンショット</h4>
@@ -617,8 +708,12 @@ async function handleScreenshotUpload(file) {
           </div>
           <div style="background: #fee; padding: 16px; border-radius: 8px; border-left: 3px solid #f44;">
             <strong>⚠️ エラー：</strong><br>
-            文字の読み取りに失敗しました。もう一度試してください。
+            AI解析に失敗しました。もう一度試してください。<br>
+            <small style="color: #999;">${error.message}</small>
           </div>
+          <button onclick="document.getElementById('screenshot-upload-area').scrollIntoView({ behavior: 'smooth', block: 'center' })" style="margin-top: 20px; width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+            ↑ もう一度試す
+          </button>
         `;
       }
     };
@@ -811,7 +906,233 @@ function generateAdviceForFields(fields, product, imageData) {
   return html;
 }
 
+// Gemini APIで商品写真を解析（中国輸入品対応）
+async function analyzeProductImagesWithGemini(imageDataUrls) {
+  try {
+    const imageParts = imageDataUrls.map(dataUrl => {
+      const base64Image = dataUrl.split(',')[1];
+      return {
+        inline_data: {
+          mime_type: 'image/jpeg',
+          data: base64Image
+        }
+      };
+    });
+
+    const prompt = `以下の商品写真から、商品情報を抽出してください。
+
+抽出項目：
+- 商品名
+- ブランド名/メーカー名
+- 型番/モデル番号
+- 重量（g、kgなど）
+- 寸法（幅×奥行き×高さ cm）
+- 容量（L、mlなど）
+- 消費電力（W）
+- 色
+- その他の特徴
+
+写真に写っている文字やラベルから、できるだけ多くの情報を読み取ってください。
+以下のJSON形式で回答してください：
+
+{
+  "name": "商品名",
+  "brand": "ブランド名",
+  "model": "型番",
+  "weight": "重量",
+  "dimensions": "寸法",
+  "capacity": "容量",
+  "wattage": "消費電力",
+  "color": "色",
+  "features": ["特徴1", "特徴2"]
+}
+
+情報が見つからない項目は空文字""にしてください。`;
+
+    const apiKey = GEMINI_API_KEY();
+    if (!apiKey) {
+      throw new Error('Gemini APIキーが設定されていません。右上の「⚙️ 設定」から設定してください。');
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                ...imageParts
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 2048,
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('商品写真解析結果:', data);
+
+    if (data.candidates && data.candidates.length > 0) {
+      const candidate = data.candidates[0];
+      if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+        const text = candidate.content.parts[0].text;
+
+        // JSONを抽出
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const productInfo = JSON.parse(jsonMatch[0]);
+          return productInfo;
+        }
+
+        throw new Error('JSON形式の回答が得られませんでした');
+      }
+    }
+
+    throw new Error('商品情報を抽出できませんでした');
+
+  } catch (error) {
+    console.error('商品写真解析エラー:', error);
+    throw error;
+  }
+}
+
+// Gemini APIでスクリーンショットを解析
+async function analyzeScreenshotWithGemini(imageDataUrl, productInfo) {
+  try {
+    // base64データからプレフィックスを削除
+    const base64Image = imageDataUrl.split(',')[1];
+
+    // プロンプトを構築
+    const productDescription = productInfo.features && productInfo.features.length > 0
+      ? productInfo.features.join(' ')
+      : 'なし';
+
+    const prompt = `Amazonセラーセントラルの商品登録画面のスクリーンショットを解析してください。
+
+商品情報：
+商品名: ${productInfo.name || 'なし'} / ブランド: ${productInfo.brand || 'なし'} / JANコード: ${productInfo.janCode || 'なし'} / 型番: ${productInfo.model || 'なし'} / 重量: ${productInfo.weight || 'なし'} / 寸法: ${productInfo.dimensions || 'なし'} / 容量: ${productInfo.capacity || 'なし'} / 消費電力: ${productInfo.wattage || 'なし'} / 色: ${productInfo.color || 'なし'}
+商品説明: ${productDescription.substring(0, 500)}
+
+タスク：
+1. 画面の各入力項目を識別
+2. 商品情報・商品説明から重量や寸法などを推測し、具体的な入力値を提示
+3. 選択肢がある場合は推奨値を提示
+4. 情報がない項目は「メーカーサイト確認」または「実測」を案内
+
+簡潔に、各項目ごとに箇条書きで回答してください。`;
+
+    const apiKey = GEMINI_API_KEY();
+    if (!apiKey) {
+      throw new Error('Gemini APIキーが設定されていません。右上の「⚙️ 設定」から設定してください。');
+    }
+
+    // Gemini APIを呼び出し
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                },
+                {
+                  inline_data: {
+                    mime_type: 'image/jpeg',
+                    data: base64Image
+                  }
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 4096,
+          },
+          safetySettings: [
+            {
+              category: "HARM_CATEGORY_HARASSMENT",
+              threshold: "BLOCK_NONE"
+            },
+            {
+              category: "HARM_CATEGORY_HATE_SPEECH",
+              threshold: "BLOCK_NONE"
+            },
+            {
+              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+              threshold: "BLOCK_NONE"
+            },
+            {
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_NONE"
+            }
+          ]
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    console.log('Gemini API レスポンス:', data);
+
+    // レスポンスからテキストを抽出
+    if (data.candidates && data.candidates.length > 0) {
+      const candidate = data.candidates[0];
+
+      // finishReasonをチェック
+      if (candidate.finishReason === 'MAX_TOKENS') {
+        console.warn('警告: 出力がトークン制限に達しました');
+      }
+
+      // contentからテキストを取得
+      if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+        return candidate.content.parts[0].text;
+      }
+
+      // textが直接ある場合
+      if (candidate.text) {
+        return candidate.text;
+      }
+    }
+
+    // エラーの詳細を表示
+    console.error('予期しないレスポンス構造:', data);
+    throw new Error('AIからの回答を取得できませんでした: ' + JSON.stringify(data).substring(0, 200));
+
+  } catch (error) {
+    console.error('Gemini API エラー:', error);
+    throw error;
+  }
+}
+
 // 初期化
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('サボツール - 初期化完了');
+  console.log('サボロット - 初期化完了');
+
+  // APIキーチェック
+  checkAPIKeys();
 });

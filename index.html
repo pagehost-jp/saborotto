@@ -3,16 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>サボ - Amazonせどりカタログ作成アシスタント</title>
+  <title>サボロット - Amazonせどりカタログ作成アシスタント</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>🌵 サボ</h1>
+      <h1>🤖 サボロット</h1>
       <p class="subtitle">Amazonせどりカタログ作成アシスタント</p>
+      <button onclick="showSettings()" style="position: absolute; top: 20px; right: 20px; padding: 8px 16px; background: white; border: 2px solid white; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; color: #667eea;">
+        ⚙️ 設定
+      </button>
     </header>
+
+    <!-- 設定モーダル -->
+    <div id="settings-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; overflow-y: auto;">
+      <div style="max-width: 800px; margin: 40px auto; background: white; border-radius: 16px; padding: 40px; position: relative;">
+        <button onclick="closeSettings()" style="position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; border-radius: 50%; background: #f44; color: white; border: none; font-size: 24px; cursor: pointer; font-weight: bold;">×</button>
+
+        <h2 style="margin-bottom: 24px; color: #333;">⚙️ API設定</h2>
+
+        <div style="background: #fff8e1; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 32px;">
+          <strong>💡 なぜAPIキーが必要？</strong><br>
+          サボロットは無料で使えますが、AI機能を使うためにGemini APIキーが必要です。<br>
+          <strong>30秒で無料取得</strong>できます！
+        </div>
+
+        <div style="margin-bottom: 32px;">
+          <h3 style="color: #667eea; margin-bottom: 16px;">Gemini API キー（必須）</h3>
+          <p style="margin-bottom: 12px; color: #555; line-height: 1.6;">
+            商品写真の解析とスクリーンショット分析に使用します。<br>
+            <a href="https://ai.google.dev/" target="_blank" style="color: #667eea; font-weight: 600;">👉 Google AI Studioで無料取得（30秒）</a>
+          </p>
+          <input type="text" id="gemini-api-key" placeholder="AIzaSy..." style="width: 100%; padding: 12px; border: 2px solid #d0d0d0; border-radius: 8px; font-family: monospace; font-size: 14px;">
+          <p style="margin-top: 12px; font-size: 13px; color: #888; line-height: 1.6;">
+            <strong>取得方法：</strong><br>
+            1. 上記リンクをクリック<br>
+            2. 「Get API key」をクリック<br>
+            3. 「Create API key」を選択<br>
+            4. キーをコピーして上の欄に貼り付け
+          </p>
+        </div>
+
+        <button onclick="saveSettings()" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 24px;">
+          💾 保存して閉じる
+        </button>
+
+        <div style="margin-top: 24px; padding: 16px; background: #f0f0f0; border-radius: 8px; font-size: 13px; color: #666; line-height: 1.6;">
+          <strong>🔒 プライバシー：</strong><br>
+          APIキーはあなたのブラウザ内（localStorage）にのみ保存されます。サーバーには送信されません。<br><br>
+          <strong>⚠️ 注意：</strong><br>
+          共有PC（ネットカフェ・会社など）での使用は避けてください。ブラウザの開発者ツールでAPIキーが閲覧可能です。<br><br>
+          <strong>📊 JANコード検索について：</strong><br>
+          楽天・Yahoo!ショッピングのAPIキーは開発者が提供済みです。ユーザー設定は不要です。
+        </div>
+      </div>
+    </div>
 
     <main>
       <!-- イントロダクション -->
@@ -32,19 +78,25 @@
             <div class="flow-arrow">→</div>
             <div class="flow-step">
               <div class="flow-number">1</div>
-              <p>サボに商品情報を登録</p>
+              <p>サボロットに商品情報を登録</p>
             </div>
             <div class="flow-arrow">→</div>
             <div class="flow-step">
               <div class="flow-number">2</div>
-              <p>わからないところをサボに質問</p>
+              <p>わからないところをサボロットに質問</p>
             </div>
           </div>
 
           <div class="note-box">
             <strong>💡 重要：</strong><br>
-            まずAmazonで商品登録を始めて、わからないところが出てきたらサボに商品情報を登録して質問してください。<br>
-            サボがあなたの商品に合った回答を提供します。
+            まずAmazonで商品登録を始めて、わからないところが出てきたらサボロットに商品情報を登録して質問してください。<br>
+            サボロットがあなたの商品に合った回答を提供します。
+          </div>
+
+          <div class="warning-box" style="margin-top: 24px;">
+            <strong>⚠️ 免責事項：</strong><br>
+            サボロットはAIを活用した補助ツールです。生成された内容が正しいこと、完全であること、適法であること、および商品に適したものであることについて、<strong>出品者様が全責任を負います</strong>。必ず内容をご確認ください。<br><br>
+            AIが生成したコンテンツは、法令およびAmazonのポリシー（規約・ガイドラインを含みますがこれに限られません）を遵守したものである必要があります。医薬品、医薬部外品、化粧品、医療機器については、Amazonの制限対象商品ガイドラインをよくお読みください。
           </div>
         </div>
       </section>
@@ -68,7 +120,7 @@
             Amazon公式AIが自動的に多くの項目を埋めてくれます。
           </div>
 
-          <button class="next-btn" onclick="showStep1()">次へ：サボに商品情報を登録 →</button>
+          <button class="next-btn" onclick="showStep1()">次へ：サボロットに商品情報を登録 →</button>
         </div>
       </section>
 
@@ -76,13 +128,14 @@
       <section id="step1" class="step-section hidden">
         <div class="step-header">
           <span class="step-number">STEP 1</span>
-          <h2>サボに商品情報を登録</h2>
+          <h2>サボロットに商品情報を登録</h2>
         </div>
 
         <div class="guide-content">
           <p class="guide-text" style="text-align: center; font-size: 18px; margin: 40px 0;">
             Amazonで埋まらなかった項目がありますか？<br>
-            <strong>商品のJANコード（バーコードの番号）を入力してください。</strong>
+            <strong>商品のJANコード（バーコードの番号）を入力してください。</strong><br>
+            <span style="font-size: 14px; color: #888;">※ 中国輸入品などJANコードがない場合は、商品写真から情報を抽出できます</span>
           </p>
 
           <div style="max-width: 500px; margin: 0 auto;">
@@ -113,8 +166,18 @@
             <h4 style="color: #ff9800; margin-bottom: 12px;">⚠️ 商品が見つかりませんでした</h4>
             <p style="margin-bottom: 16px;">
               JANコードで商品情報が見つかりませんでした。<br>
-              商品パッケージの写真をアップロードしてください。
+              <strong>商品パッケージの写真を最大3枚アップロードしてください。</strong><br>
+              AIが写真から商品名、ブランド、型番、重量、寸法などを自動抽出します。
             </p>
+
+            <div style="background: #f0f9ff; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 3px solid #0ea5e9;">
+              <strong>📸 推奨：以下の3枚を撮影</strong><br>
+              <div style="margin-top: 12px; line-height: 1.8;">
+                1️⃣ <strong>全体写真</strong>（パッケージ全体が見えるように）<br>
+                2️⃣ <strong>仕様ラベル</strong>（重量、寸法、ワット数などが書かれた部分）<br>
+                3️⃣ <strong>ブランド・型番</strong>（メーカー名やモデル番号が明記された部分）
+              </div>
+            </div>
 
             <div class="upload-area-product" id="product-upload-area">
               <div class="upload-content">
@@ -122,7 +185,8 @@
                   <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
                 </svg>
                 <p><strong>商品写真をアップロード</strong></p>
-                <p class="small">クリックまたはドラッグ&ドロップ（複数枚OK）</p>
+                <p class="small">クリックまたはドラッグ&ドロップ</p>
+                <p class="small" style="color: #667eea; margin-top: 4px;">📸 1枚ずつ追加OK（最大3枚）</p>
               </div>
               <input type="file" id="product-upload" accept="image/*" multiple hidden>
             </div>
@@ -133,7 +197,7 @@
             </div>
           </div>
 
-          <button class="next-btn" onclick="showStep2()">次へ：わからないところをサボに質問 →</button>
+          <button class="next-btn" onclick="showStep2()">次へ：わからないところをサボロットに質問 →</button>
           <button class="back-btn" onclick="showStep0()">← 戻る</button>
         </div>
       </section>
@@ -142,21 +206,21 @@
       <section id="step2" class="step-section hidden">
         <div class="step-header">
           <span class="step-number">STEP 2</span>
-          <h2>わからないところをサボに質問</h2>
+          <h2>わからないところをサボロットに質問</h2>
         </div>
 
         <div class="guide-content">
           <p class="guide-text">
             Amazon AIでも埋まらなかった項目や、入力方法がわからない項目はありませんか？<br>
             <strong>その部分のスクリーンショットをアップロードしてください。</strong><br>
-            サボが、STEP 1で登録した商品情報をもとに、何を入力すればよいかアドバイスします。
+            サボロットが、STEP 1で登録した商品情報をもとに、何を入力すればよいかアドバイスします。
           </p>
 
           <div class="screenshot-helper">
             <h3>📸 わからない項目のスクリーンショットをアップロード</h3>
             <p>
               セラーセントラルで、入力方法がわからない項目や埋まらなかった項目のスクリーンショットを撮って、<br>
-              ここにアップロードしてください。サボが商品情報をもとに回答します。<br>
+              ここにアップロードしてください。サボロットが商品情報をもとに回答します。<br>
               <strong style="color: #667eea;">複数の項目を質問する場合は、それぞれアップロードしてください。</strong>
             </p>
 
@@ -187,7 +251,10 @@
     </main>
 
     <footer>
-      <p>&copy; 2024 サボ - Amazonせどりカタログ作成アシスタント</p>
+      <p>&copy; 2024 サボロット - Amazonせどりカタログ作成アシスタント</p>
+      <p style="margin-top: 12px; font-size: 12px; opacity: 0.7;">
+        本ツールはAI補助ツールです。生成された内容の正確性・適法性については出品者様の責任でご確認ください。
+      </p>
     </footer>
   </div>
 
