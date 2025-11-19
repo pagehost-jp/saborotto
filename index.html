@@ -240,36 +240,67 @@
         <div class="guide-content">
           <p class="guide-text">
             Amazon AIでも埋まらなかった項目や、入力方法がわからない項目はありませんか？<br>
-            <strong>その部分のスクリーンショットをアップロードしてください。</strong><br>
+            <strong>スクリーンショットをアップロード、または文字で質問してください。</strong><br>
             サボロットが、STEP 1で登録した商品情報をもとに、何を入力すればよいかアドバイスします。
           </p>
 
-          <div class="screenshot-helper">
-            <h3>📸 わからない項目のスクリーンショットをアップロード</h3>
-            <p>
-              セラーセントラルで、入力方法がわからない項目や埋まらなかった項目のスクリーンショットを撮って、<br>
-              ここにアップロードしてください。サボロットが商品情報をもとに回答します。<br>
-              <strong style="color: #667eea;">複数の項目を質問する場合は、それぞれアップロードしてください。</strong>
-            </p>
-
-            <div class="upload-area" id="screenshot-upload-area">
-              <div class="upload-content">
-                <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-                </svg>
-                <p><strong>スクリーンショットをアップロード</strong></p>
-                <p class="small">クリックまたはドラッグ&ドロップ</p>
-              </div>
-              <input type="file" id="screenshot-upload" accept="image/*" hidden>
-            </div>
-
-            <div id="screenshot-advice" class="screenshot-advice hidden"></div>
+          <div class="tabs" style="margin-top: 32px;">
+            <button class="tab-btn active" onclick="switchQuestionTab('screenshot')">📸 スクショで質問</button>
+            <button class="tab-btn" onclick="switchQuestionTab('text')">💬 文字で質問</button>
           </div>
 
-          <div class="note-box">
-            <strong>💡 ヒント：</strong><br>
-            スクリーンショットには、項目名や入力欄が明確に写っているものが最適です。<br>
-            複数の項目がわからない場合は、それぞれスクリーンショットを撮ってアップロードしてください。
+          <div id="tab-screenshot" class="tab-content active">
+            <div class="screenshot-helper" style="border: none; padding: 0; margin-top: 24px;">
+              <h3>📸 わからない項目のスクリーンショットをアップロード</h3>
+              <p>
+                セラーセントラルで、入力方法がわからない項目や埋まらなかった項目のスクリーンショットを撮って、<br>
+                ここにアップロードしてください。サボロットが商品情報をもとに回答します。
+              </p>
+
+              <div class="upload-area" id="screenshot-upload-area">
+                <div class="upload-content">
+                  <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                  </svg>
+                  <p><strong>スクリーンショットをアップロード</strong></p>
+                  <p class="small">クリックまたはドラッグ&ドロップ</p>
+                </div>
+                <input type="file" id="screenshot-upload" accept="image/*" hidden>
+              </div>
+
+              <div id="screenshot-advice" class="screenshot-advice hidden"></div>
+
+              <div class="note-box" style="margin-top: 24px;">
+                <strong>💡 ヒント：</strong><br>
+                スクリーンショットには、項目名や入力欄が明確に写っているものが最適です。
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-text" class="tab-content" style="display: none;">
+            <div style="margin-top: 24px;">
+              <h3 style="color: #333; margin-bottom: 16px;">💬 わからないことを文字で質問</h3>
+              <p style="margin-bottom: 16px; color: #555; line-height: 1.8;">
+                例：「重量はどう入力すればいいですか？」「商品の寸法がわかりません」など
+              </p>
+
+              <textarea
+                id="text-question-input"
+                placeholder="例：商品の重量を入力する欄があるのですが、どのように入力すればいいですか？"
+                style="width: 100%; min-height: 120px; padding: 16px; border: 2px solid #d0d0d0; border-radius: 8px; font-size: 15px; line-height: 1.6; resize: vertical; font-family: inherit;"
+              ></textarea>
+
+              <button onclick="askTextQuestion()" style="width: 100%; margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                🤖 質問する
+              </button>
+
+              <div id="text-advice" class="screenshot-advice hidden" style="margin-top: 24px;"></div>
+
+              <div class="note-box" style="margin-top: 24px;">
+                <strong>💡 ヒント：</strong><br>
+                具体的に質問すると、より正確な回答が得られます。
+              </div>
+            </div>
           </div>
 
           <button class="back-btn" onclick="showStep1()">← 戻る</button>

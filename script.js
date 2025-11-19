@@ -1359,6 +1359,153 @@ async function analyzeScreenshotWithGemini(imageDataUrl, productInfo) {
   }
 }
 
+// タブ切り替え
+function switchQuestionTab(tabName) {
+  // タブボタンの切り替え
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  event.target.classList.add('active');
+
+  // タブコンテンツの切り替え
+  document.getElementById('tab-screenshot').style.display = tabName === 'screenshot' ? 'block' : 'none';
+  document.getElementById('tab-text').style.display = tabName === 'text' ? 'block' : 'none';
+}
+
+// テキストで質問
+async function askTextQuestion() {
+  const questionInput = document.getElementById('text-question-input');
+  const question = questionInput.value.trim();
+  const textAdvice = document.getElementById('text-advice');
+
+  if (!question) {
+    alert('質問を入力してください');
+    return;
+  }
+
+  if (!productData.info) {
+    alert('先にSTEP 1で商品情報を登録してください。');
+    return;
+  }
+
+  // ローディング表示
+  textAdvice.classList.remove('hidden');
+  textAdvice.innerHTML = `
+    <p style="text-align: center; color: #888;">
+      <span style="display: inline-block; width: 20px; height: 20px; border: 3px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span><br>
+      AIが回答を作成中...
+    </p>
+    <style>
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  `;
+
+  try {
+    // Gemini APIでテキスト質問に回答
+    const aiResponse = await analyzeTextQuestionWithGemini(question, productData.info);
+
+    // AIの回答を表示（ハイライト処理）
+    let highlightedResponse = aiResponse
+      .replace(/## (.*)/g, '<div style="margin-top: 24px; margin-bottom: 12px; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; font-weight: 700; font-size: 16px;">$1</div>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #667eea;">$1</strong>')
+      .replace(/(メーカーサイト[^。\n]*確認[^。\n]*)/g, '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">⚠️ $1</span>')
+      .replace(/(実測[^。\n]*)/g, '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">📏 $1</span>')
+      .replace(/(パッケージ[^。\n]*確認[^。\n]*)/g, '<span style="background: #d1ecf1; padding: 2px 6px; border-radius: 4px; color: #0c5460; font-weight: 600;">📦 $1</span>');
+
+    textAdvice.innerHTML = `
+      <div style="background: #f5f7ff; padding: 20px; border-radius: 8px; border: 2px solid #667eea; margin-bottom: 16px;">
+        <h4 style="color: #667eea; margin-bottom: 16px;">🤖 サボロットの回答</h4>
+        <div style="line-height: 1.8; white-space: pre-wrap;">${highlightedResponse}</div>
+      </div>
+
+      <button onclick="document.getElementById('text-question-input').value = ''; document.getElementById('text-question-input').focus(); document.getElementById('text-advice').classList.add('hidden');" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+        ↑ 別の質問をする
+      </button>
+    `;
+
+  } catch (error) {
+    console.error('AI回答エラー:', error);
+    textAdvice.innerHTML = `
+      <div style="background: #fee; padding: 16px; border-radius: 8px; border-left: 3px solid #f44;">
+        <strong>⚠️ エラー：</strong><br>
+        AI回答の生成に失敗しました。もう一度試してください。<br>
+        <small style="color: #999;">${error.message}</small>
+      </div>
+      <button onclick="askTextQuestion()" style="margin-top: 20px; width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+        ↑ もう一度試す
+      </button>
+    `;
+  }
+}
+
+// Gemini APIでテキスト質問に回答
+async function analyzeTextQuestionWithGemini(question, productInfo) {
+  const productDescription = productInfo.features && productInfo.features.length > 0
+    ? productInfo.features.join(' ')
+    : 'なし';
+
+  const prompt = `Amazonセラーセントラルの商品登録に関する質問に答えてください。
+
+商品情報：
+商品名: ${productInfo.name || 'なし'} / ブランド: ${productInfo.brand || 'なし'} / JANコード: ${productInfo.janCode || 'なし'} / 型番: ${productInfo.model || 'なし'} / 重量: ${productInfo.weight || 'なし'} / 寸法: ${productInfo.dimensions || 'なし'} / 容量: ${productInfo.capacity || 'なし'} / 消費電力: ${productInfo.wattage || 'なし'} / 色: ${productInfo.color || 'なし'}
+商品説明: ${productDescription.substring(0, 500)}
+
+質問：
+${question}
+
+この質問に対して、上記の商品情報をもとに具体的な回答を提供してください。
+情報がない項目は「メーカーサイト確認」または「実測」を案内してください。
+簡潔に箇条書きで回答してください。`;
+
+  const apiKey = GEMINI_API_KEY();
+  if (!apiKey) {
+    throw new Error('Gemini APIキーが設定されていません。右上の「⚙️ 設定」から設定してください。');
+  }
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+  }
+
+  const data = await response.json();
+
+  if (data.candidates && data.candidates.length > 0) {
+    const candidate = data.candidates[0];
+    if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+      return candidate.content.parts[0].text;
+    }
+  }
+
+  throw new Error('AIからの回答を取得できませんでした');
+}
+
 // 初期化
 document.addEventListener('DOMContentLoaded', () => {
   console.log('サボロット - 初期化完了');
