@@ -1,14 +1,14 @@
 // Stripe Webhookハンドラー - 決済完了時の処理
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY?.trim());
 const admin = require('firebase-admin');
 
 // Firebase Admin初期化（複数回初期化を防ぐ）
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      projectId: process.env.FIREBASE_PROJECT_ID?.trim(),
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL?.trim(),
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.trim().replace(/\\n/g, '\n'),
     }),
   });
 }
