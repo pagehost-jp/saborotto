@@ -19,12 +19,18 @@ module.exports = async (req, res) => {
     const rawKey = process.env.STRIPE_SECRET_KEY || '';
     const stripeKey = rawKey.trim().replace(/^["']|["']$/g, '');
 
-    console.log('=== Environment Variable Check ===');
-    console.log('STRIPE_SECRET_KEY exists?', !!process.env.STRIPE_SECRET_KEY);
-    console.log('Raw key length:', rawKey.length);
-    console.log('Trimmed key length:', stripeKey.length);
-    console.log('Starts with sk_test_?', stripeKey.startsWith('sk_test_'));
-    console.log('First 15 chars:', stripeKey.substring(0, 15));
+    console.log('=== Environment Variable Debug ===');
+    console.log('[DEBUG] All env vars keys:', Object.keys(process.env).filter(k => k.includes('STRIPE')));
+    console.log('[DEBUG] process.env.STRIPE_SECRET_KEY type:', typeof process.env.STRIPE_SECRET_KEY);
+    console.log('[DEBUG] process.env.STRIPE_SECRET_KEY exists?', !!process.env.STRIPE_SECRET_KEY);
+    console.log('[DEBUG] process.env.STRIPE_SECRET_KEY === undefined?', process.env.STRIPE_SECRET_KEY === undefined);
+    console.log('[DEBUG] process.env.STRIPE_SECRET_KEY === ""?', process.env.STRIPE_SECRET_KEY === '');
+    console.log('[DEBUG] Raw key length:', rawKey.length);
+    console.log('[DEBUG] Trimmed key length:', stripeKey.length);
+    console.log('[DEBUG] Starts with sk_test_?', stripeKey.startsWith('sk_test_'));
+    console.log('[DEBUG] Starts with sk_live_?', stripeKey.startsWith('sk_live_'));
+    console.log('[DEBUG] First 7 chars:', stripeKey.substring(0, 7));
+    console.log('[DEBUG] Last 10 chars:', stripeKey.substring(stripeKey.length - 10));
     console.log('==================================');
 
     // 環境変数が存在しない場合は明確なエラーを返す
