@@ -682,6 +682,12 @@ async function handleScreenshotUpload(file) {
         // Gemini APIで画像を解析
         const aiResponse = await analyzeScreenshotWithGemini(imageData, productData.info);
 
+        // AIの回答をハイライト処理
+        let highlightedResponse = aiResponse
+          .replace(/(メーカーサイト[^。\n]*確認[^。\n]*)/g, '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">⚠️ $1</span>')
+          .replace(/(実測[^。\n]*)/g, '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">📏 $1</span>')
+          .replace(/(パッケージ[^。\n]*確認[^。\n]*)/g, '<span style="background: #d1ecf1; padding: 2px 6px; border-radius: 4px; color: #0c5460; font-weight: 600;">📦 $1</span>');
+
         // AIの回答を表示
         screenshotAdvice.innerHTML = `
           <div style="margin-bottom: 20px; text-align: center;">
@@ -691,7 +697,7 @@ async function handleScreenshotUpload(file) {
 
           <div style="background: #f5f7ff; padding: 20px; border-radius: 8px; border: 2px solid #667eea; margin-bottom: 16px;">
             <h4 style="color: #667eea; margin-bottom: 16px;">🤖 サボロットのアドバイス</h4>
-            <div style="line-height: 1.8; white-space: pre-wrap;">${aiResponse}</div>
+            <div style="line-height: 1.8; white-space: pre-wrap;">${highlightedResponse}</div>
           </div>
 
           <button onclick="document.getElementById('screenshot-upload-area').scrollIntoView({ behavior: 'smooth', block: 'center' })" style="margin-top: 20px; width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
