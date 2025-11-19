@@ -867,11 +867,10 @@ async function handleScreenshotUpload(file) {
           // カテゴリー見出しを装飾
           .replace(/## (.*)/g, '<div style="margin-top: 24px; margin-bottom: 12px; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; font-weight: 700; font-size: 16px;">$1</div>')
           // 太字を装飾
-          .replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #667eea;">$1</strong>')
-          // 強調キーワード
-          .replace(/(メーカーサイト[^。\n]*確認[^。\n]*)/g, '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">⚠️ $1</span>')
-          .replace(/(実測[^。\n]*)/g, '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">📏 $1</span>')
-          .replace(/(パッケージ[^。\n]*確認[^。\n]*)/g, '<span style="background: #d1ecf1; padding: 2px 6px; border-radius: 4px; color: #0c5460; font-weight: 600;">📦 $1</span>');
+          .replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #667eea;">$1</strong>');
+
+        // Google検索ヘルプリンクを追加（ハイライト処理と統合）
+        highlightedResponse = addGoogleSearchLinksWithHighlight(highlightedResponse, productData.info);
 
         // AIの回答を表示
         screenshotAdvice.innerHTML = `
@@ -1226,6 +1225,90 @@ JSON以外のテキストは含めないでください。`;
   }
 }
 
+// ハイライトと検索リンクを同時に追加
+function addGoogleSearchLinksWithHighlight(response, productInfo) {
+  // 商品名とブランドからキーワードを生成
+  const productName = productInfo.name || '';
+  const brand = productInfo.brand || '';
+  const model = productInfo.model || '';
+
+  // 検索キーワードのベース
+  const baseKeyword = `${brand} ${productName} ${model}`.trim().substring(0, 100);
+
+  console.log('🔍 検索キーワードベース:', baseKeyword);
+
+  // 検索リンクを生成
+  const createSearchLinks = (type) => {
+    if (!baseKeyword) return '';
+
+    const searchConfigs = {
+      'メーカーサイト確認': [
+        { label: '公式サイトで仕様を確認', keyword: `${baseKeyword} 仕様 公式` },
+        { label: 'スペック情報を検索', keyword: `${baseKeyword} スペック 詳細` }
+      ],
+      '実測': [
+        { label: 'サイズ・重量を検索', keyword: `${baseKeyword} サイズ 重量` },
+        { label: '実寸情報を検索', keyword: `${baseKeyword} 実寸 寸法` }
+      ],
+      'パッケージ確認': [
+        { label: 'パッケージ画像を検索', keyword: `${baseKeyword} パッケージ` },
+        { label: 'パッケージ表示内容を検索', keyword: `${baseKeyword} パッケージ 表示` }
+      ]
+    };
+
+    const links = searchConfigs[type] || [];
+    return generateSearchHelpHtml(links);
+  };
+
+  let modifiedResponse = response;
+
+  // 「メーカーサイト確認」をハイライト + 検索リンク追加
+  modifiedResponse = modifiedResponse.replace(
+    /(メーカーサイト[^。\n]*確認[^。\n]*)/g,
+    (match) => {
+      const highlighted = `<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">⚠️ ${match}</span>`;
+      const searchLinks = createSearchLinks('メーカーサイト確認');
+      console.log('✅ メーカーサイト確認の検索リンクを追加');
+      return highlighted + searchLinks;
+    }
+  );
+
+  // 「実測」をハイライト + 検索リンク追加
+  modifiedResponse = modifiedResponse.replace(
+    /(実測[^。\n]*)/g,
+    (match) => {
+      const highlighted = `<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">📏 ${match}</span>`;
+      const searchLinks = createSearchLinks('実測');
+      console.log('✅ 実測の検索リンクを追加');
+      return highlighted + searchLinks;
+    }
+  );
+
+  // 「パッケージ確認」をハイライト + 検索リンク追加
+  modifiedResponse = modifiedResponse.replace(
+    /(パッケージ[^。\n]*確認[^。\n]*)/g,
+    (match) => {
+      const highlighted = `<span style="background: #d1ecf1; padding: 2px 6px; border-radius: 4px; color: #0c5460; font-weight: 600;">📦 ${match}</span>`;
+      const searchLinks = createSearchLinks('パッケージ確認');
+      console.log('✅ パッケージ確認の検索リンクを追加');
+      return highlighted + searchLinks;
+    }
+  );
+
+  return modifiedResponse;
+}
+
+// 検索ヘルプHTMLを生成（超コンパクト版）
+function generateSearchHelpHtml(links) {
+  const linksHtml = links.map((link, index) => {
+    const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(link.keyword)}`;
+    const separator = index === 0 ? '' : ' / ';
+    return `${separator}<a href="${googleUrl}" target="_blank" rel="noopener noreferrer" style="color: #1a73e8; text-decoration: none; font-size: 12px; margin-left: 4px;">🔍検索</a>`;
+  }).join('');
+
+  return `<span style="font-size: 11px; color: #666; margin-left: 6px;">(${linksHtml})</span>`;
+}
+
 // Gemini APIでスクリーンショットを解析
 async function analyzeScreenshotWithGemini(imageDataUrl, productInfo) {
   try {
@@ -1409,10 +1492,10 @@ async function askTextQuestion() {
     // AIの回答を表示（ハイライト処理）
     let highlightedResponse = aiResponse
       .replace(/## (.*)/g, '<div style="margin-top: 24px; margin-bottom: 12px; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; font-weight: 700; font-size: 16px;">$1</div>')
-      .replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #667eea;">$1</strong>')
-      .replace(/(メーカーサイト[^。\n]*確認[^。\n]*)/g, '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">⚠️ $1</span>')
-      .replace(/(実測[^。\n]*)/g, '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">📏 $1</span>')
-      .replace(/(パッケージ[^。\n]*確認[^。\n]*)/g, '<span style="background: #d1ecf1; padding: 2px 6px; border-radius: 4px; color: #0c5460; font-weight: 600;">📦 $1</span>');
+      .replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #667eea;">$1</strong>');
+
+    // Google検索ヘルプリンクを追加（ハイライト処理と統合）
+    highlightedResponse = addGoogleSearchLinksWithHighlight(highlightedResponse, productData.info);
 
     textAdvice.innerHTML = `
       <div style="background: #f5f7ff; padding: 20px; border-radius: 8px; border: 2px solid #667eea; margin-bottom: 16px;">

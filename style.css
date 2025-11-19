@@ -566,6 +566,19 @@ main {
   color: #333;
 }
 
+/* Google検索リンク（コンパクト版） */
+a[href*="google.com/search"] {
+  color: #1a73e8;
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+a[href*="google.com/search"]:hover {
+  text-decoration: underline;
+  color: #0c5ba0;
+}
+
 /* フッター */
 footer {
   text-align: center;
