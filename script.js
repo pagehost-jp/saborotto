@@ -529,20 +529,64 @@ async function analyzeProductImages() {
   `;
 
   try {
-    // Gemini APIで商品写真を解析
-    const extractedInfo = await analyzeProductImagesWithGemini(productData.images);
+    let htmlResults = '';
+    const allResults = [];
 
-    // JANコードも抽出できていればJANコードプロパティを追加
-    if (!extractedInfo.janCode) {
-      extractedInfo.janCode = '';
+    // 各画像を個別に解析
+    for (let i = 0; i < productData.images.length; i++) {
+      productAnalysisDetails.innerHTML = `
+        <p style="text-align: center; color: #888;">
+          <span style="display: inline-block; width: 20px; height: 20px; border: 3px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span><br>
+          画像${i + 1}/${productData.images.length}を解析中...
+        </p>
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+        ${htmlResults}
+      `;
+
+      const result = await analyzeProductImagesWithGemini([productData.images[i]]);
+      allResults.push(result);
+
+      // 各画像の解析結果を表示
+      htmlResults += `
+        <div style="margin-bottom: 20px; padding: 16px; background: #f5f7ff; border-radius: 8px; border: 2px solid #e0e7ff;">
+          <h4 style="color: #667eea; margin-bottom: 12px;">📷 画像${i + 1}の読み取り結果</h4>
+          <div style="font-size: 14px; line-height: 1.8;">
+            ${result.name ? `<div><strong>商品名：</strong>${result.name}</div>` : ''}
+            ${result.brand ? `<div><strong>ブランド：</strong>${result.brand}</div>` : ''}
+            ${result.model ? `<div><strong>型番：</strong>${result.model}</div>` : ''}
+            ${result.weight ? `<div><strong>重量：</strong>${result.weight}</div>` : ''}
+            ${result.dimensions ? `<div><strong>寸法：</strong>${result.dimensions}</div>` : ''}
+            ${result.capacity ? `<div><strong>容量：</strong>${result.capacity}</div>` : ''}
+            ${result.wattage ? `<div><strong>消費電力：</strong>${result.wattage}</div>` : ''}
+            ${result.color ? `<div><strong>色：</strong>${result.color}</div>` : ''}
+            ${result.features && result.features.length > 0 ? `<div><strong>特徴：</strong>${result.features.join('、')}</div>` : ''}
+          </div>
+        </div>
+      `;
     }
 
-    productData.info = extractedInfo;
+    // 統合情報を作成
+    const combinedInfo = combineProductInfo(allResults);
+    productData.info = combinedInfo;
 
-    console.log('抽出された商品情報:', extractedInfo);
-
-    // 商品情報を表示（画像解析用）
-    displayProductInfoForImage(extractedInfo);
+    // 最終結果を表示
+    productAnalysisDetails.innerHTML = htmlResults + `
+      <div style="margin-top: 24px; padding: 20px; background: white; border-radius: 8px; border: 2px solid #667eea;">
+        <h4 style="color: #667eea; margin-bottom: 16px;">✅ 統合された商品情報</h4>
+        <div style="font-size: 15px; line-height: 1.8;">
+          ${combinedInfo.name ? `<div style="margin-bottom: 8px;"><strong>商品名：</strong>${combinedInfo.name}</div>` : ''}
+          ${combinedInfo.brand ? `<div style="margin-bottom: 8px;"><strong>ブランド：</strong>${combinedInfo.brand}</div>` : ''}
+          ${combinedInfo.model ? `<div style="margin-bottom: 8px;"><strong>型番：</strong>${combinedInfo.model}</div>` : ''}
+          ${combinedInfo.weight ? `<div style="margin-bottom: 8px;"><strong>重量：</strong>${combinedInfo.weight}</div>` : ''}
+          ${combinedInfo.dimensions ? `<div style="margin-bottom: 8px;"><strong>寸法：</strong>${combinedInfo.dimensions}</div>` : ''}
+          ${combinedInfo.color ? `<div style="margin-bottom: 8px;"><strong>色：</strong>${combinedInfo.color}</div>` : ''}
+        </div>
+      </div>
+      <div style="margin-top: 16px; padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 3px solid #0ea5e9;">
+        <strong>✅ 解析完了</strong><br>
+        この情報をもとに、STEP 2でわからない項目についてアドバイスします。
+      </div>
+    `;
 
   } catch (error) {
     console.error('商品情報読み取りエラー:', error);
@@ -557,6 +601,54 @@ async function analyzeProductImages() {
       </button>
     `;
   }
+}
+
+// 複数の解析結果を統合
+function combineProductInfo(results) {
+  const combined = {
+    name: '',
+    brand: '',
+    model: '',
+    weight: '',
+    dimensions: '',
+    capacity: '',
+    wattage: '',
+    color: '',
+    features: []
+  };
+
+  // 各項目で最も詳しい情報を採用
+  for (const result of results) {
+    if (result.name && result.name.length > combined.name.length) {
+      combined.name = result.name;
+    }
+    if (result.brand && !combined.brand) {
+      combined.brand = result.brand;
+    }
+    if (result.model && !combined.model) {
+      combined.model = result.model;
+    }
+    if (result.weight && !combined.weight) {
+      combined.weight = result.weight;
+    }
+    if (result.dimensions && !combined.dimensions) {
+      combined.dimensions = result.dimensions;
+    }
+    if (result.capacity && !combined.capacity) {
+      combined.capacity = result.capacity;
+    }
+    if (result.wattage && !combined.wattage) {
+      combined.wattage = result.wattage;
+    }
+    if (result.color && !combined.color) {
+      combined.color = result.color;
+    }
+    if (result.features && result.features.length > 0) {
+      combined.features = [...new Set([...combined.features, ...result.features])];
+    }
+  }
+
+  return combined;
 }
 
 // テキストから商品情報を抽出
