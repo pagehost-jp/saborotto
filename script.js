@@ -314,7 +314,7 @@ function extractBrandFromName(name) {
   return '';
 }
 
-// 商品情報を表示
+// 商品情報を表示（JAN検索用）
 function displayProductInfo(info) {
   const productDetails = document.getElementById('product-details');
   productDetails.innerHTML = `
@@ -341,13 +341,41 @@ function displayProductInfo(info) {
   `;
 }
 
+// 商品情報を表示（画像解析用）
+function displayProductInfoForImage(info) {
+  productAnalysisDetails.innerHTML = `
+    <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #e0e7ff;">
+      <div style="margin-bottom: 12px;">
+        <strong>商品名：</strong>${info.name || '（取得できませんでした）'}
+      </div>
+      ${info.brand ? `<div style="margin-bottom: 12px;"><strong>ブランド：</strong>${info.brand}</div>` : ''}
+      ${info.model ? `<div style="margin-bottom: 12px;"><strong>型番：</strong>${info.model}</div>` : ''}
+      ${info.weight ? `<div style="margin-bottom: 12px;"><strong>重量：</strong>${info.weight}</div>` : ''}
+      ${info.dimensions ? `<div style="margin-bottom: 12px;"><strong>寸法：</strong>${info.dimensions}</div>` : ''}
+      ${info.color ? `<div style="margin-bottom: 12px;"><strong>色：</strong>${info.color}</div>` : ''}
+      ${info.features && info.features.length > 0 ? `
+        <div>
+          <strong>特徴：</strong>
+          <div style="margin-top: 8px; padding: 12px; background: #f9f9f9; border-radius: 4px; font-size: 14px;">
+            ${info.features.join('、')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+    <div style="margin-top: 16px; padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 3px solid #0ea5e9;">
+      <strong>✅ 商品情報を解析しました</strong><br>
+      この情報をもとに、STEP 2でわからない項目についてアドバイスします。
+    </div>
+  `;
+}
+
 // STEP 0: 商品写真アップロード
 const productUploadArea = document.getElementById('product-upload-area');
 const productUpload = document.getElementById('product-upload');
 const productPreview = document.getElementById('product-preview');
 const previewImages = document.getElementById('preview-images');
-const productInfo = document.getElementById('product-info');
-const productDetails = document.getElementById('product-details');
+const productAnalysis = document.getElementById('product-analysis');
+const productAnalysisDetails = document.getElementById('product-analysis-details');
 
 if (productUploadArea && productUpload) {
   productUploadArea.addEventListener('click', () => {
@@ -446,7 +474,7 @@ async function handleProductUpload(files) {
             imgContainer.remove();
             if (productData.images.length === 0) {
               productPreview.classList.add('hidden');
-              productInfo.classList.add('hidden');
+              productAnalysis.classList.add('hidden');
             }
           }
         };
@@ -472,8 +500,8 @@ async function handleProductUpload(files) {
 
 // 自動解析開始
 function autoAnalyzeProductImages() {
-  productInfo.classList.remove('hidden');
-  productDetails.innerHTML = `
+  productAnalysis.classList.remove('hidden');
+  productAnalysisDetails.innerHTML = `
     <div style="text-align: center; padding: 20px;">
       <p style="margin-bottom: 16px; color: #555;">
         <strong>${productData.images.length}枚の画像</strong>がアップロードされました。<br>
@@ -491,7 +519,7 @@ function autoAnalyzeProductImages() {
 
 // 商品画像を解析
 async function analyzeProductImages() {
-  productDetails.innerHTML = `
+  productAnalysisDetails.innerHTML = `
     <p style="text-align: center; color: #888;">
       <span style="display: inline-block; width: 20px; height: 20px; border: 3px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span><br>
       AIが商品情報を解析しています...
@@ -516,12 +544,12 @@ async function analyzeProductImages() {
 
     console.log('抽出された商品情報:', extractedInfo);
 
-    // 商品情報を表示
-    displayProductInfo(extractedInfo);
+    // 商品情報を表示（画像解析用）
+    displayProductInfoForImage(extractedInfo);
 
   } catch (error) {
     console.error('商品情報読み取りエラー:', error);
-    productDetails.innerHTML = `
+    productAnalysisDetails.innerHTML = `
       <div style="background: #fee; padding: 16px; border-radius: 8px; border-left: 3px solid #f44;">
         <strong>⚠️ エラー：</strong><br>
         商品情報の読み取りに失敗しました。もう一度試してください。<br>

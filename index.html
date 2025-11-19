@@ -175,8 +175,7 @@
             <p id="jan-status" style="margin-top: 8px; font-size: 13px; color: #888; text-align: center;"></p>
           </div>
 
-          <div id="product-info" class="product-info hidden">
-            <h4 style="color: #667eea; margin-bottom: 16px;">✅ 商品情報を取得しました</h4>
+          <div id="product-info" class="product-info hidden" style="margin-top: 24px;">
             <div id="product-details" class="product-details"></div>
             <button onclick="resetProductInfo()" style="margin-top: 20px; padding: 12px 24px; background: #f44; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
               🗑️ リセットして別の商品を検索
@@ -207,7 +206,7 @@
                 </svg>
                 <p><strong>商品写真をアップロード</strong></p>
                 <p class="small">クリックまたはドラッグ&ドロップ</p>
-                <p class="small" style="color: #667eea; margin-top: 4px;">📸 1枚ずつ追加OK（最大3枚）</p>
+                <p class="small" style="color: #667eea; margin-top: 4px;">📸 1枚ずつ追加OK（最大3枚）→ 自動解析開始</p>
               </div>
               <input type="file" id="product-upload" accept="image/*" multiple hidden>
             </div>
@@ -215,6 +214,10 @@
             <div id="product-preview" class="product-preview hidden">
               <h4>📷 アップロードされた写真</h4>
               <div id="preview-images" class="preview-images"></div>
+            </div>
+
+            <div id="product-analysis" class="product-info hidden" style="margin-top: 16px;">
+              <div id="product-analysis-details" class="product-details"></div>
             </div>
           </div>
 
