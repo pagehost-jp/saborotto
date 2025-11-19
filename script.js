@@ -682,8 +682,13 @@ async function handleScreenshotUpload(file) {
         // Gemini APIで画像を解析
         const aiResponse = await analyzeScreenshotWithGemini(imageData, productData.info);
 
-        // AIの回答をハイライト処理
+        // AIの回答をフォーマット処理
         let highlightedResponse = aiResponse
+          // カテゴリー見出しを装飾
+          .replace(/## (.*)/g, '<div style="margin-top: 24px; margin-bottom: 12px; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; font-weight: 700; font-size: 16px;">$1</div>')
+          // 太字を装飾
+          .replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #667eea;">$1</strong>')
+          // 強調キーワード
           .replace(/(メーカーサイト[^。\n]*確認[^。\n]*)/g, '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">⚠️ $1</span>')
           .replace(/(実測[^。\n]*)/g, '<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; color: #856404; font-weight: 600;">📏 $1</span>')
           .replace(/(パッケージ[^。\n]*確認[^。\n]*)/g, '<span style="background: #d1ecf1; padding: 2px 6px; border-radius: 4px; color: #0c5460; font-weight: 600;">📦 $1</span>');
@@ -1039,7 +1044,21 @@ async function analyzeScreenshotWithGemini(imageDataUrl, productInfo) {
 3. 選択肢がある場合は推奨値を提示
 4. 情報がない項目は「メーカーサイト確認」または「実測」を案内
 
-簡潔に、各項目ごとに箇条書きで回答してください。`;
+以下のカテゴリーに分けて回答してください：
+
+## 📦 基本情報
+（商品名、ブランド、JANコード、型番など）
+
+## 📏 サイズ・重量
+（寸法、重量、容量など）
+
+## 🎨 商品詳細
+（色、素材、対象年齢など）
+
+## 📝 その他
+（カテゴリー、説明文、注意事項など）
+
+各項目は「**項目名**: 入力値」の形式で箇条書きにしてください。`;
 
     const apiKey = GEMINI_API_KEY();
     if (!apiKey) {
