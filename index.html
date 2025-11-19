@@ -317,32 +317,33 @@
     </footer>
   </div>
 
-  <!-- 購入モーダル -->
+  <!-- ウェルカムモーダル（完全無料版） -->
   <div id="purchase-modal">
     <div class="purchase-card">
       <h2>🤖 サボロット</h2>
-      <div class="product-name">買い切りライセンス</div>
+      <div class="product-name" style="background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%); color: white;">完全無料</div>
 
-      <div class="price">¥1,980<span> / 買い切り</span></div>
+      <div style="text-align: center; padding: 24px 0; font-size: 18px; color: #333; line-height: 1.8;">
+        <strong>🎉 サボロットは完全無料でご利用いただけます</strong><br>
+        <span style="font-size: 15px; color: #666;">登録不要・制限なし</span>
+      </div>
 
       <ul class="features">
-        <li>Amazonカタログ作成AI補助機能</li>
-        <li>商品写真からの自動情報抽出</li>
-        <li>JAN検索機能</li>
-        <li>スクリーンショット分析</li>
-        <li>追加料金なし・サブスクなし</li>
-        <li>永久ライセンス</li>
+        <li>✅ Amazonカタログ作成AI補助機能</li>
+        <li>✅ 商品写真からの自動情報抽出</li>
+        <li>✅ JAN検索機能</li>
+        <li>✅ スクリーンショット分析</li>
+        <li>✅ すべての機能が無料</li>
+        <li>✅ 追加料金なし・サブスクなし</li>
       </ul>
 
-      <input type="email" id="purchase-email" placeholder="メールアドレスを入力" required>
-
-      <button id="checkout-button" class="checkout-btn" onclick="startCheckout()">
-        💳 ¥1,980で購入する
+      <button id="checkout-button" class="checkout-btn" style="background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);" onclick="document.getElementById('purchase-modal').style.display='none'">
+        🚀 無料で使い始める
       </button>
 
-      <div class="guarantee">
-        🛡️ 30日間返金保証<br>
-        ご満足いただけない場合は全額返金いたします
+      <div style="text-align: center; margin-top: 20px; font-size: 13px; color: #888;">
+        💡 Gemini APIキーの設定が必要です（無料取得可能）<br>
+        右上の「⚙️ 設定」から設定してください
       </div>
     </div>
   </div>
