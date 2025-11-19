@@ -1,0 +1,18 @@
+# 環境変数
+.env
+.env.local
+.env*.local
+
+# 依存関係
+node_modules/
+package-lock.json
+yarn.lock
+
+# Vercel
+.vercel
+
+# macOS
+.DS_Store
+
+# Firebase
+firebase-admin-key.json

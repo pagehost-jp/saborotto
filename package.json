@@ -1,0 +1,16 @@
+{
+  "name": "saborotto",
+  "version": "1.0.0",
+  "description": "Amazon Seller Central catalog creation assistant with payment integration",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "stripe": "^14.9.0",
+    "firebase-admin": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
