@@ -112,18 +112,50 @@ function resetProductInfo() {
   document.getElementById('jan-input').focus();
 }
 
+// JAN自動検索
+let janSearchTimeout = null;
+function autoSearchJAN(value) {
+  const janStatus = document.getElementById('jan-status');
+
+  // 既存のタイマーをクリア
+  if (janSearchTimeout) {
+    clearTimeout(janSearchTimeout);
+  }
+
+  if (!value) {
+    janStatus.textContent = '';
+    return;
+  }
+
+  if (!/^\d+$/.test(value)) {
+    janStatus.innerHTML = '⚠️ 数字のみ入力してください';
+    janStatus.style.color = '#f44';
+    return;
+  }
+
+  // 8桁または13桁になったら自動検索
+  if (value.length === 8 || value.length === 13) {
+    janStatus.innerHTML = '🔍 検索中...';
+    janStatus.style.color = '#667eea';
+    janSearchTimeout = setTimeout(() => {
+      searchByJAN();
+    }, 500);
+  } else {
+    janStatus.innerHTML = `あと${(value.length < 8 ? 8 : 13) - value.length}桁入力してください`;
+    janStatus.style.color = '#888';
+  }
+}
+
 // JANコードで商品検索
 async function searchByJAN() {
   const janInput = document.getElementById('jan-input');
   const janCode = janInput.value.trim();
 
   if (!janCode) {
-    alert('JANコードを入力してください');
     return;
   }
 
   if (!/^\d{8}$|^\d{13}$/.test(janCode)) {
-    alert('JANコードは8桁または13桁の数字で入力してください');
     return;
   }
 
@@ -434,24 +466,27 @@ async function handleProductUpload(files) {
     alert(`画像は最大3枚までです。${imagesToAdd}枚を追加しました。`);
   }
 
-  // 解析ボタンを表示
-  showAnalyzeButton();
+  // 自動解析開始
+  autoAnalyzeProductImages();
 }
 
-// 解析ボタンを表示
-function showAnalyzeButton() {
+// 自動解析開始
+function autoAnalyzeProductImages() {
   productInfo.classList.remove('hidden');
   productDetails.innerHTML = `
     <div style="text-align: center; padding: 20px;">
       <p style="margin-bottom: 16px; color: #555;">
         <strong>${productData.images.length}枚の画像</strong>がアップロードされました。<br>
-        ${productData.images.length < 3 ? '<span style="color: #888; font-size: 14px;">（さらに追加することもできます）</span>' : ''}
+        ${productData.images.length < 3 ? '<span style="color: #888; font-size: 14px;">（さらに追加して再解析できます）</span>' : ''}
       </p>
-      <button onclick="analyzeProductImages()" style="padding: 16px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
-        🤖 AIで商品情報を解析する
-      </button>
+      <p style="color: #667eea; font-weight: 600;">🤖 AIで解析中...</p>
     </div>
   `;
+
+  // 少し待ってから解析開始（ユーザーにフィードバック）
+  setTimeout(() => {
+    analyzeProductImages();
+  }, 800);
 }
 
 // 商品画像を解析
