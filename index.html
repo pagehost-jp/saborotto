@@ -317,6 +317,37 @@
     </footer>
   </div>
 
+  <!-- 購入モーダル -->
+  <div id="purchase-modal">
+    <div class="purchase-card">
+      <h2>🤖 サボロット</h2>
+      <div class="product-name">買い切りライセンス</div>
+
+      <div class="price">¥1,980<span> / 買い切り</span></div>
+
+      <ul class="features">
+        <li>Amazonカタログ作成AI補助機能</li>
+        <li>商品写真からの自動情報抽出</li>
+        <li>JAN検索機能</li>
+        <li>スクリーンショット分析</li>
+        <li>追加料金なし・サブスクなし</li>
+        <li>永久ライセンス</li>
+      </ul>
+
+      <input type="email" id="purchase-email" placeholder="メールアドレスを入力" required>
+
+      <button id="checkout-button" class="checkout-btn" onclick="startCheckout()">
+        💳 ¥1,980で購入する
+      </button>
+
+      <div class="guarantee">
+        🛡️ 30日間返金保証<br>
+        ご満足いただけない場合は全額返金いたします
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
