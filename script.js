@@ -48,7 +48,7 @@ function checkAPIKeys() {
   if (!getAPIKey('gemini_api_key')) {
     // 初回起動または未設定
     setTimeout(() => {
-      if (confirm('サボロットを使うには、APIキーの設定が必要です。\n設定画面を開きますか？')) {
+      if (confirm('サボロットを使うには、Gemini APIキーの設定が必要です。\n（無料・30秒で取得可能・追加料金なし）\n\n設定画面を開きますか？')) {
         showSettings();
       }
     }, 1000);
