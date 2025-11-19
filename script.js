@@ -992,20 +992,22 @@ async function analyzeProductImagesWithGemini(imageDataUrls) {
 
     const prompt = `以下の商品写真から、商品情報を抽出してください。
 
-抽出項目：
-- 商品名
-- ブランド名/メーカー名
-- 型番/モデル番号
-- 重量（g、kgなど）
-- 寸法（幅×奥行き×高さ cm）
-- 容量（L、mlなど）
-- 消費電力（W）
-- 色
-- その他の特徴
-
 写真に写っている文字やラベルから、できるだけ多くの情報を読み取ってください。
-以下のJSON形式で回答してください：
 
+**必ずJSON形式のみで回答してください。説明文は不要です。**
+
+抽出項目：
+- name: 商品名
+- brand: ブランド名/メーカー名
+- model: 型番/モデル番号
+- weight: 重量（g、kgなど）
+- dimensions: 寸法（幅×奥行き×高さ cm）
+- capacity: 容量（L、mlなど）
+- wattage: 消費電力（W）
+- color: 色
+- features: 特徴（配列）
+
+回答例：
 {
   "name": "商品名",
   "brand": "ブランド名",
@@ -1018,7 +1020,8 @@ async function analyzeProductImagesWithGemini(imageDataUrls) {
   "features": ["特徴1", "特徴2"]
 }
 
-情報が見つからない項目は空文字""にしてください。`;
+情報が見つからない項目は空文字""にしてください。
+JSON以外のテキストは含めないでください。`;
 
     const apiKey = GEMINI_API_KEY();
     if (!apiKey) {
@@ -1044,6 +1047,7 @@ async function analyzeProductImagesWithGemini(imageDataUrls) {
           generationConfig: {
             temperature: 0.4,
             maxOutputTokens: 2048,
+            responseMimeType: "application/json"
           }
         })
       }
@@ -1062,14 +1066,35 @@ async function analyzeProductImagesWithGemini(imageDataUrls) {
       if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
         const text = candidate.content.parts[0].text;
 
-        // JSONを抽出
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const productInfo = JSON.parse(jsonMatch[0]);
+        try {
+          // JSON modeで返ってくるのでそのままパース
+          const productInfo = JSON.parse(text);
           return productInfo;
-        }
+        } catch (parseError) {
+          console.error('JSON解析エラー:', parseError);
+          console.log('取得したテキスト:', text);
 
-        throw new Error('JSON形式の回答が得られませんでした');
+          // フォールバック: 手動でJSONを抽出
+          let jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+          if (!jsonMatch) {
+            jsonMatch = text.match(/```\s*([\s\S]*?)\s*```/);
+          }
+          if (!jsonMatch) {
+            jsonMatch = text.match(/\{[\s\S]*\}/);
+          }
+
+          if (jsonMatch) {
+            try {
+              const jsonText = jsonMatch[1] || jsonMatch[0];
+              const productInfo = JSON.parse(jsonText);
+              return productInfo;
+            } catch (e) {
+              throw new Error('画像から情報を読み取れませんでした。より鮮明な写真をお試しください。');
+            }
+          }
+
+          throw new Error('画像がはっきり写っているか確認してください。');
+        }
       }
     }
 
