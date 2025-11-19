@@ -112,15 +112,9 @@ function resetProductInfo() {
   document.getElementById('jan-input').focus();
 }
 
-// JAN自動検索
-let janSearchTimeout = null;
-function autoSearchJAN(value) {
+// JAN入力ステータス更新
+function updateJANStatus(value) {
   const janStatus = document.getElementById('jan-status');
-
-  // 既存のタイマーをクリア
-  if (janSearchTimeout) {
-    clearTimeout(janSearchTimeout);
-  }
 
   if (!value) {
     janStatus.textContent = '';
@@ -133,13 +127,9 @@ function autoSearchJAN(value) {
     return;
   }
 
-  // 8桁または13桁になったら自動検索
   if (value.length === 8 || value.length === 13) {
-    janStatus.innerHTML = '🔍 検索中...';
-    janStatus.style.color = '#667eea';
-    janSearchTimeout = setTimeout(() => {
-      searchByJAN();
-    }, 500);
+    janStatus.innerHTML = '✅ 入力完了（検索ボタンを押してください）';
+    janStatus.style.color = '#4caf50';
   } else {
     janStatus.innerHTML = `あと${(value.length < 8 ? 8 : 13) - value.length}桁入力してください`;
     janStatus.style.color = '#888';
@@ -150,14 +140,21 @@ function autoSearchJAN(value) {
 async function searchByJAN() {
   const janInput = document.getElementById('jan-input');
   const janCode = janInput.value.trim();
+  const janStatus = document.getElementById('jan-status');
 
   if (!janCode) {
+    alert('JANコードを入力してください');
     return;
   }
 
   if (!/^\d{8}$|^\d{13}$/.test(janCode)) {
+    janStatus.innerHTML = '⚠️ JANコードは8桁または13桁の数字で入力してください';
+    janStatus.style.color = '#f44';
     return;
   }
+
+  janStatus.innerHTML = '🔍 検索中...';
+  janStatus.style.color = '#667eea';
 
   // ローディング表示
   const productInfo = document.getElementById('product-info');

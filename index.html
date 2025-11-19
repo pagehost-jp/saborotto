@@ -170,8 +170,12 @@
               placeholder="4901234567890"
               style="width: 100%; padding: 16px; font-size: 18px; border: 2px solid #d0d0d0; border-radius: 8px; text-align: center; font-family: monospace;"
               maxlength="13"
-              oninput="autoSearchJAN(this.value)"
+              oninput="updateJANStatus(this.value)"
+              onkeypress="if(event.key==='Enter') searchByJAN()"
             >
+            <button onclick="searchByJAN()" style="width: 100%; margin-top: 12px; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;">
+              🔍 商品情報を検索
+            </button>
             <p id="jan-status" style="margin-top: 8px; font-size: 13px; color: #888; text-align: center;"></p>
           </div>
 
