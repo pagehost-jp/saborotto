@@ -566,20 +566,48 @@ async function analyzeProductImages() {
     }
 
     // 統合情報を作成
-    const combinedInfo = combineProductInfo(allResults);
-    productData.info = combinedInfo;
+    const imageInfo = combineProductInfo(allResults);
+
+    // JANデータがあれば統合、なければ画像データのみ
+    if (productData.info) {
+      const janData = productData.info;
+      productData.info = {
+        // 各項目で空でない方を優先
+        name: imageInfo.name || janData.name || '',
+        brand: imageInfo.brand || janData.brand || '',
+        janCode: janData.janCode || imageInfo.janCode || '',
+        model: imageInfo.model || janData.model || '',
+        weight: imageInfo.weight || janData.weight || '',
+        dimensions: imageInfo.dimensions || janData.dimensions || '',
+        capacity: imageInfo.capacity || janData.capacity || '',
+        wattage: imageInfo.wattage || janData.wattage || '',
+        color: imageInfo.color || janData.color || '',
+        price: janData.price || '',  // 価格はJANのみ
+        // 特徴は統合
+        features: [...new Set([
+          ...(janData.features || []),
+          ...(imageInfo.features || [])
+        ])]
+      };
+    } else {
+      productData.info = imageInfo;
+    }
 
     // 最終結果を表示
+    const finalInfo = productData.info;
     productAnalysisDetails.innerHTML = htmlResults + `
       <div style="margin-top: 24px; padding: 20px; background: white; border-radius: 8px; border: 2px solid #667eea;">
-        <h4 style="color: #667eea; margin-bottom: 16px;">✅ 統合された商品情報</h4>
+        <h4 style="color: #667eea; margin-bottom: 16px;">✅ 統合された商品情報${productData.info.janCode ? ' （JAN検索 + 画像解析）' : ' （画像解析のみ）'}</h4>
         <div style="font-size: 15px; line-height: 1.8;">
-          ${combinedInfo.name ? `<div style="margin-bottom: 8px;"><strong>商品名：</strong>${combinedInfo.name}</div>` : ''}
-          ${combinedInfo.brand ? `<div style="margin-bottom: 8px;"><strong>ブランド：</strong>${combinedInfo.brand}</div>` : ''}
-          ${combinedInfo.model ? `<div style="margin-bottom: 8px;"><strong>型番：</strong>${combinedInfo.model}</div>` : ''}
-          ${combinedInfo.weight ? `<div style="margin-bottom: 8px;"><strong>重量：</strong>${combinedInfo.weight}</div>` : ''}
-          ${combinedInfo.dimensions ? `<div style="margin-bottom: 8px;"><strong>寸法：</strong>${combinedInfo.dimensions}</div>` : ''}
-          ${combinedInfo.color ? `<div style="margin-bottom: 8px;"><strong>色：</strong>${combinedInfo.color}</div>` : ''}
+          ${finalInfo.name ? `<div style="margin-bottom: 8px;"><strong>商品名：</strong>${finalInfo.name}</div>` : ''}
+          ${finalInfo.brand ? `<div style="margin-bottom: 8px;"><strong>ブランド：</strong>${finalInfo.brand}</div>` : ''}
+          ${finalInfo.janCode ? `<div style="margin-bottom: 8px;"><strong>JANコード：</strong>${finalInfo.janCode}</div>` : ''}
+          ${finalInfo.model ? `<div style="margin-bottom: 8px;"><strong>型番：</strong>${finalInfo.model}</div>` : ''}
+          ${finalInfo.weight ? `<div style="margin-bottom: 8px;"><strong>重量：</strong>${finalInfo.weight}</div>` : ''}
+          ${finalInfo.dimensions ? `<div style="margin-bottom: 8px;"><strong>寸法：</strong>${finalInfo.dimensions}</div>` : ''}
+          ${finalInfo.capacity ? `<div style="margin-bottom: 8px;"><strong>容量：</strong>${finalInfo.capacity}</div>` : ''}
+          ${finalInfo.color ? `<div style="margin-bottom: 8px;"><strong>色：</strong>${finalInfo.color}</div>` : ''}
+          ${finalInfo.price ? `<div style="margin-bottom: 8px;"><strong>参考価格：</strong>${finalInfo.price}</div>` : ''}
         </div>
       </div>
       <div style="margin-top: 16px; padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 3px solid #0ea5e9;">
