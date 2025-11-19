@@ -1,6 +1,15 @@
 // Stripe Checkoutセッション作成API
 const stripeKey = process.env.STRIPE_SECRET_KEY?.trim();
 
+// デバッグログ
+console.log('STRIPE_SECRET_KEY check:', {
+  isDefined: !!process.env.STRIPE_SECRET_KEY,
+  lengthBefore: process.env.STRIPE_SECRET_KEY?.length,
+  lengthAfter: stripeKey?.length,
+  startsWithCorrectPrefix: stripeKey?.startsWith('sk_test_'),
+  first15Chars: stripeKey?.substring(0, 15)
+});
+
 const stripe = require('stripe')(stripeKey);
 
 module.exports = async (req, res) => {
