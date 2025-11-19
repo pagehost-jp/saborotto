@@ -1,5 +1,9 @@
 // Stripe Checkoutセッション作成API
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+console.log('STRIPE_SECRET_KEY exists:', !!stripeKey);
+console.log('STRIPE_SECRET_KEY starts with:', stripeKey?.substring(0, 10));
+
+const stripe = require('stripe')(stripeKey);
 
 module.exports = async (req, res) => {
   // CORSヘッダー設定
