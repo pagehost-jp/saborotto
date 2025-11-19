@@ -1,10 +1,4 @@
 // Stripe Checkoutセッション作成API
-// 環境変数から値を取得し、trim + クォート削除
-const rawKey = process.env.STRIPE_SECRET_KEY || '';
-const stripeKey = rawKey.trim().replace(/^["']|["']$/g, '');
-
-const stripe = require('stripe')(stripeKey);
-
 module.exports = async (req, res) => {
   // CORSヘッダー設定
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -21,11 +15,37 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // 環境変数の存在確認（デバッグログ）
+    const rawKey = process.env.STRIPE_SECRET_KEY || '';
+    const stripeKey = rawKey.trim().replace(/^["']|["']$/g, '');
+
+    console.log('=== Environment Variable Check ===');
+    console.log('STRIPE_SECRET_KEY exists?', !!process.env.STRIPE_SECRET_KEY);
+    console.log('Raw key length:', rawKey.length);
+    console.log('Trimmed key length:', stripeKey.length);
+    console.log('Starts with sk_test_?', stripeKey.startsWith('sk_test_'));
+    console.log('First 15 chars:', stripeKey.substring(0, 15));
+    console.log('==================================');
+
+    // 環境変数が存在しない場合は明確なエラーを返す
+    if (!stripeKey || stripeKey.length < 20) {
+      console.error('❌ STRIPE_SECRET_KEY is missing or invalid');
+      return res.status(500).json({
+        error: 'Server configuration error: STRIPE_SECRET_KEY is not properly set',
+        details: 'Please check Vercel environment variables'
+      });
+    }
+
+    // Stripeクライアントを初期化（関数内で初期化することで環境変数の問題を明確化）
+    const stripe = require('stripe')(stripeKey);
+
     const { email } = req.body;
 
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
     }
+
+    console.log('Creating checkout session for:', email);
 
     // Stripe Checkoutセッションを作成
     const session = await stripe.checkout.sessions.create({
@@ -52,9 +72,14 @@ module.exports = async (req, res) => {
       },
     });
 
+    console.log('✅ Checkout session created:', session.id);
     return res.status(200).json({ sessionId: session.id, url: session.url });
   } catch (error) {
-    console.error('Checkout session creation error:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('❌ Checkout session creation error:', error);
+    console.error('Error stack:', error.stack);
+    return res.status(500).json({
+      error: error.message || 'Failed to create checkout session',
+      type: error.type || 'unknown_error'
+    });
   }
 };

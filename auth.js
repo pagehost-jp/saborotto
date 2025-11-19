@@ -42,6 +42,12 @@ async function checkPurchaseStatus() {
   // メールアドレスがある場合は購入状態を確認
   try {
     const response = await fetch(`${API_BASE}/verify-purchase?email=${encodeURIComponent(userEmail)}`);
+
+    if (!response.ok) {
+      console.error('Purchase verification failed with status:', response.status);
+      throw new Error('Failed to verify purchase');
+    }
+
     const data = await response.json();
 
     if (!data.isPurchased) {
@@ -103,6 +109,26 @@ async function startCheckout() {
       body: JSON.stringify({ email }),
     });
 
+    // レスポンスのステータスをチェック
+    if (!response.ok) {
+      // エラーレスポンスの処理
+      let errorMessage = '決済画面の起動に失敗しました。';
+
+      try {
+        // JSONエラーレスポンスを試す
+        const errorData = await response.json();
+        errorMessage = errorData.error || errorMessage;
+        console.error('Server error:', errorData);
+      } catch (jsonError) {
+        // JSONパースに失敗した場合はテキストとして取得
+        const errorText = await response.text();
+        console.error('Server returned non-JSON error:', errorText);
+        errorMessage += '\n\nサーバーエラーが発生しました。しばらく待ってから再度お試しください。';
+      }
+
+      throw new Error(errorMessage);
+    }
+
     const data = await response.json();
 
     if (data.url) {
@@ -113,7 +139,7 @@ async function startCheckout() {
     }
   } catch (error) {
     console.error('Checkout開始エラー:', error);
-    alert('決済画面の起動に失敗しました。もう一度お試しください。');
+    alert(error.message || '決済画面の起動に失敗しました。もう一度お試しください。');
     button.textContent = originalText;
     button.disabled = false;
   }

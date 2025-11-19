@@ -32,6 +32,10 @@ module.exports = async (req, res) => {
   try {
     const email = req.method === 'GET' ? req.query.email : req.body.email;
 
+    console.log('=== Verify Purchase Request ===');
+    console.log('Email:', email);
+    console.log('Method:', req.method);
+
     if (!email) {
       return res.status(400).json({ error: 'Email is required' });
     }
@@ -40,6 +44,7 @@ module.exports = async (req, res) => {
     const purchaseDoc = await db.collection('purchases').doc(email).get();
 
     if (!purchaseDoc.exists) {
+      console.log('No purchase found for:', email);
       return res.status(200).json({
         isPurchased: false,
         message: 'No purchase found for this email'
@@ -47,6 +52,7 @@ module.exports = async (req, res) => {
     }
 
     const purchaseData = purchaseDoc.data();
+    console.log('✅ Purchase found:', { email, isPaid: purchaseData.isPaid });
 
     return res.status(200).json({
       isPurchased: purchaseData.isPaid || false,
@@ -54,7 +60,11 @@ module.exports = async (req, res) => {
       email: purchaseData.email,
     });
   } catch (error) {
-    console.error('Error verifying purchase:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('❌ Error verifying purchase:', error);
+    console.error('Error stack:', error.stack);
+    return res.status(500).json({
+      error: error.message || 'Failed to verify purchase',
+      details: 'Internal server error'
+    });
   }
 };
